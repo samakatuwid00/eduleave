@@ -1,0 +1,21 @@
+system feature:
+
+Contact us
+About Us
+Log in and Register System
+Email Notification
+Email Verification
+Forgot Password/Reset Password
+Middleware Security for Users (such as pending, approved, and rejected users)
+Middleware Security for Admin
+Dashboard for Users and Admin
+View all users info (admin side)
+Approve and reject user (admin side)
+View individual leave card
+Edit Leave Cards 
+Can Add and Delete Entry of leave card
+Can Fullscreen Leave both for admin and users
+printing
+exporting (pdf and excel)
+
+
