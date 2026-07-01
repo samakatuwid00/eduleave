@@ -6,9 +6,9 @@
         <h4><strong>Contact Us</strong></h4>
         <p>If you have any questions or inquiries, feel free to reach out to us:</p>
         <ul class="contact-details">
-            <li><i class="fa fa-envelope"></i> <strong>Email:</strong> eduleave07@gmail.com</li>
-            <li><i class="fa fa-phone"></i> <strong>Mobile Number:</strong> 0981 630 0070</li>
-            <li><i class="fa fa-map-marker-alt"></i> <strong>Address:</strong> Roxas Avenue, Brgy. Triangulo, Diversion Road, Naga City 4400</li>
+            <li><i class="fa fa-envelope"></i> <strong>Email:</strong> support@eduleave.com</li>
+            <li><i class="fa fa-phone"></i> <strong>Phone:</strong> +123 456 7890</li>
+            <li><i class="fa fa-map-marker-alt"></i> <strong>Address:</strong> 123 Edu Leave St, City, Country</li>
         </ul>
         <button id="closeModal" class="close-btn">Close</button>
     </div>

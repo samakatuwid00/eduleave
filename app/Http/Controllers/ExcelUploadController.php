@@ -61,37 +61,29 @@ class ExcelUploadController extends Controller
     {
         // Retrieve the selected user's data by employee number
         $user = User::where('employee_number', $employee_number)->first();
-    
+        
         if (!$user) {
             return back()->with('error', 'User not found.');
         }
-    
+        
+        // Get the user's name
         $userName = $user->name ?? 'Unknown User';
-    
+        
         // Define the headers
         $headers = [[
             'Inclusive Period', 'Nature of Activity', 'No of Days Credited', 'DSO No VSR',
             'Inclusive Dates', 'No Days Leave', 'Service Credit Balance', 'Leave Without Pay',
             'Nature of Leave', 'DSO No ROL', 'Remarks'
         ]];
-    
+        
         // Create the Excel file
         $xlsx = SimpleXLSXGen::fromArray($headers);
-    
-        // Clear output buffering to prevent file corruption
-        if (ob_get_length()) {
-            ob_end_clean();
-        }
-    
-        // Set proper headers manually
-        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-        header('Content-Disposition: attachment; filename="' . $userName . ' - Template.xlsx"');
-        header('Cache-Control: max-age=0');
-        header('Expires: 0');
-        header('Pragma: public');
-    
-        // Stream the file
-        $xlsx->downloadAs($userName . ' - Template.xlsx');
-        exit;  // Ensure no further output occurs
+        
+        // Define the filename including the user's name
+        $filename = str_replace(' ', ' ', $userName) . ' - Template' . '.xlsx';
+        
+        // Stream the file for download
+        return $xlsx->downloadAs($filename);
     }
+    
 }

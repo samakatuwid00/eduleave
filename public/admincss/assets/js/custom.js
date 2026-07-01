@@ -41,6 +41,10 @@ $(document).ready(function () {
                 title: function () {
                     return "Teachers Leave Card - " + userName;
                 },
+                orientation: 'landscape',
+                exportOptions: {
+                    columns: ':not(.no-export)'
+                }
             },
             {
                 extend: "print",
@@ -53,7 +57,7 @@ $(document).ready(function () {
     });
 
     // Handle More Info Button
-    $(document).on('click', '.more-info-btn', function() {
+    $(".more-info-btn").click(function () {
         const userId = $(this).data("id"); // Get the user ID from data-id attribute
 
         // AJAX request to fetch user details
@@ -429,7 +433,7 @@ $(document).ready(function () {
         });
 
         // Attach click event for More Info buttons
-        $(document).on('click', '.more-info-btn', function() {
+        $(".more-info-btn").click(function () {
             const userId = $(this).data("id"); // Get the user ID from the button
 
             // Set user ID in the modal for later use
