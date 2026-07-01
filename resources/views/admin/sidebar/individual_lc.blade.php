@@ -91,7 +91,7 @@
               <thead>
                 @if ($user->personnel == 'Non-Teaching')
                 <tr style="text-align: center;">
-                  <th style="border: 1px solid black; text-align: center;">ID</th>
+                  <th style="border: 1px solid black; text-align: center;" class="no-export">ID</th>
                   <th style="border: 1px solid black;">Period</th>
                   <th style="border: 1px solid black;">Particulars</th>
                   <th style="border: 1px solid black;">Vacation Leave Earned</th>
@@ -103,16 +103,16 @@
                   <th style="border: 1px solid black;">Balance</th>
                   <th style="border: 1px solid black;">Absence/Undertime Without Pay</th>
                   <th style="border: 1px solid black;">Date & Action On Application For Leave</th>
-                  <th style="border: 1px solid black;">Actions</th>
+                  <th style="border: 1px solid black;" class="no-export">Actions</th>
                 </tr>
                 @elseif ($user->personnel == 'Teaching')
                 <tr style="text-align: center;">
                   <th colspan="5" style="border: 1px solid black; text-align: center;">Vacation Service Rendered</th>
                   <th colspan="7" style="border: 1px solid black; text-align: center;">Record of Leave</th>
-                  <th rowspan="2" style="border: 1px solid black; vertical-align: middle; text-align: center;">Action</th>
+                  <th rowspan="2" style="border: 1px solid black; vertical-align: middle; text-align: center;" class="no-export">Action</th>
                 </tr>
                 <tr style="text-align: center;">
-                  <th style="border: 1px solid black;">ID</th>
+                  <th style="border: 1px solid black;" class="no-export">ID</th>
                   <th style="border: 1px solid black;">Inclusive Period</th>
                   <th style="border: 1px solid black; text-align: center;">Nature of Activity</th>
                   <th style="border: 1px solid black;">No. of Days Credited</th>
@@ -150,7 +150,7 @@
                   <td class="editable-cell" data-field="nature_of_leave" style="border: 1px solid black;">{{ $item->nature_of_leave }}</td>
                   <td class="editable-cell" data-field="dso_no_rol" style="border: 1px solid black;">{{ $item->dso_no_rol }}</td>
                   <td class="editable-cell" data-field="remarks" style="border: 1px solid black;">{{ $item->remarks }}</td>
-                  <td style="border: 1px solid black;">
+                  <td style="border: 1px solid black;" class="no-export">
                     <button class="btn btn-success btn-edit" title="Edit">
                       <i class="fa fa-edit"></i>
                     </button>

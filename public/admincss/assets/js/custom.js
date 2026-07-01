@@ -41,6 +41,10 @@ $(document).ready(function () {
                 title: function () {
                     return "Teachers Leave Card - " + userName;
                 },
+                exportOptions: {
+                    columns: ':not(.no-export)'
+                },
+                orientation: 'landscape',
             },
             {
                 extend: "print",
