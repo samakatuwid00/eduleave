@@ -6,9 +6,8 @@
     "license": "MIT",
     "require": {
         "php": "^8.2",
-        "laravel/framework": "^11.9",
+        "laravel/framework": "^12.61.1",
         "laravel/tinker": "^2.9",
-        "phpoffice/phpexcel": "^1.8",
         "shuchkin/simplexlsx": "^1.1",
         "shuchkin/simplexlsxgen": "^1.4"
     },
