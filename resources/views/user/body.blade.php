@@ -47,60 +47,96 @@ return $dateString; // If no time part, return the original string
       </div>
     </div>
     <!-- Table Container -->
-    <div class="row mt-4" id="tableContainer" data-user-name="{{ $user->name ?? 'Unknown User' }}">
-      <div class="col-md-12">
-        <table id="newTable" class="display nowrap cell-border ui celled table" style="width:100%; border-collapse: collapse;">
-          <thead>
-            <tr style="text-align: center;">
-              <th colspan="5" style="border: 1px solid black; text-align: center;">Vacation Service Rendered</th>
-              <th colspan="7" style="border: 1px solid black; text-align: center;">Record of Leave</th>
-            </tr>
-            <tr style="text-align: center;">
-              <!-- Vacation Headers -->
-              <th style="border: 1px solid black;">ID</th>
-              <th style="border: 1px solid black;">Inclusive Period</th>
-              <th style="border: 1px solid black;">Nature of Activity</th>
-              <th style="border: 1px solid black;">No. of Days Credited</th>
-              <th style="border: 1px solid black;">DSO No.</th>
-              <!-- Record Headers -->
-              <th style="border: 1px solid black;">Inclusive Dates</th>
-              <th style="border: 1px solid black;">Days With Pay</th>
-              <th style="border: 1px solid black;">Service Credit Balance</th>
-              <th style="border: 1px solid black;">Days Without Pay</th>
-              <th style="border: 1px solid black;">Nature of Leave</th>
-              <th style="border: 1px solid black;">DSO No.</th>
-              <th style="border: 1px solid black;">Remarks</th>
-            </tr>
-          </thead>
-          <tbody>
-            @php
-            $counter = 1; // Initialize counter
-            @endphp
+<div class="row mt-4" id="tableContainer" data-user-name="{{ $user->name ?? 'Unknown User' }}">
+  <div class="col-md-12">
 
-            @foreach ($cardInfoss as $item)
+    @if ($user->personnel == 'Non-Teaching')
+      <table id="newTable" class="display nowrap cell-border ui celled table" style="width:100%; border-collapse: collapse;">
+        <thead>
+          <tr style="text-align: center;">
+            <th style="border: 1px solid black; text-align: center;">ID</th>
+            <th style="border: 1px solid black;">Period</th>
+            <th style="border: 1px solid black;">Particulars</th>
+            <th style="border: 1px solid black;">Vacation Leave Earned</th>
+            <th style="border: 1px solid black;">Absence/Undertime With Pay</th>
+            <th style="border: 1px solid black;">Balance</th>
+            <th style="border: 1px solid black;">Absence/Undertime Without Pay</th>
+            <th style="border: 1px solid black;">Sick Leave Earned</th>
+            <th style="border: 1px solid black;">Absence/Undertime With Pay</th>
+            <th style="border: 1px solid black;">Balance</th>
+            <th style="border: 1px solid black;">Absence/Undertime Without Pay</th>
+            <th style="border: 1px solid black;">Date & Action On Application For Leave</th>
+          </tr>
+        </thead>
+        <tbody>
+          @php $counter = 1; @endphp
+          @foreach ($cardInfoss as $item)
             <tr data-id="{{ $item->id }}">
-              <td style="border: 1px solid black;">{{ $counter }}</td> <!-- Use counter here -->
-              <td style="border: 1px solid black;"> {{ formatDate($item->inclusive_period) }}</td>
-              <td style="border: 1px solid black;">{{ $item->nature_of_activity }}</td>
-              <td style="border: 1px solid black;">{{ $item->no_of_days_credited }}</td>
-              <td style="border: 1px solid black;">{{ $item->dso_no_vsr }}</td>
-              <td style="border: 1px solid black;">{{ formatDate($item->inclusive_dates) }}</td>
-              <td style="border: 1px solid black;">{{ $item->no_days_leave }}</td>
-              <td style="border: 1px solid black;">{{ $item->service_cred_bal }}</td>
-              <td style="border: 1px solid black;">{{ $item->leave_without_pay }}</td>
-              <td style="border: 1px solid black;">{{ $item->nature_of_leave }}</td>
-              <td style="border: 1px solid black;">{{ $item->dso_no_rol }}</td>
-              <td style="border: 1px solid black;">{{ $item->remarks }}</td>
+              <td>{{ $counter }}</td>
+              <td>{{ formatDate($item->inclusive_period) }}</td>
+              <td>{{ $item->nature_of_activity }}</td>
+              <td>{{ $item->no_of_days_credited }}</td>
+              <td>{{ $item->dso_no_vsr }}</td>
+              <td>{{ formatDate($item->inclusive_dates) }}</td>
+              <td>{{ $item->no_days_leave }}</td>
+              <td>{{ $item->service_cred_bal }}</td>
+              <td>{{ $item->leave_without_pay }}</td>
+              <td>{{ $item->nature_of_leave }}</td>
+              <td>{{ $item->dso_no_rol }}</td>
+              <td>{{ $item->remarks }}</td>
             </tr>
+            @php $counter++; @endphp
+          @endforeach
+        </tbody>
+      </table>
 
-            @php
-            $counter++; // Increment counter after each row
-            @endphp
-            @endforeach
-          </tbody>
-        </table>
-      </div>
-    </div>
+    @elseif ($user->personnel == 'Teaching')
+      <table id="newTable" class="display nowrap cell-border ui celled table" style="width:100%; border-collapse: collapse;">
+        <thead>
+          <tr style="text-align: center;">
+            <th colspan="5" style="border: 1px solid black; text-align: center;">Vacation Service Rendered</th>
+            <th colspan="7" style="border: 1px solid black; text-align: center;">Record of Leave</th>
+          </tr>
+          <tr style="text-align: center;">
+            <th style="border: 1px solid black;">ID</th>
+            <th style="border: 1px solid black;">Inclusive Period</th>
+            <th style="border: 1px solid black; text-align: center;">Nature of Activity</th>
+            <th style="border: 1px solid black;">No. of Days Credited</th>
+            <th style="border: 1px solid black;">DSO No.</th>
+            <th style="border: 1px solid black;">Inclusive Dates</th>
+            <th style="border: 1px solid black;">Days With Pay</th>
+            <th style="border: 1px solid black;">Service Credit Balance</th>
+            <th style="border: 1px solid black;">Days Without Pay</th>
+            <th style="border: 1px solid black;">Nature of Leave</th>
+            <th style="border: 1px solid black;">DSO No.</th>
+            <th style="border: 1px solid black;">Remarks</th>
+          </tr>
+        </thead>
+        <tbody>
+          @php $counter = 1; @endphp
+          @foreach ($cardInfoss as $item)
+            <tr data-id="{{ $item->id }}">
+              <td>{{ $counter }}</td>
+              <td>{{ formatDate($item->inclusive_period) }}</td>
+              <td>{{ $item->nature_of_activity }}</td>
+              <td>{{ $item->no_of_days_credited }}</td>
+              <td>{{ $item->dso_no_vsr }}</td>
+              <td>{{ formatDate($item->inclusive_dates) }}</td>
+              <td>{{ $item->no_days_leave }}</td>
+              <td>{{ $item->service_cred_bal }}</td>
+              <td>{{ $item->leave_without_pay }}</td>
+              <td>{{ $item->nature_of_leave }}</td>
+              <td>{{ $item->dso_no_rol }}</td>
+              <td>{{ $item->remarks }}</td>
+            </tr>
+            @php $counter++; @endphp
+          @endforeach
+        </tbody>
+      </table>
+    @endif
+
+  </div>
+</div>
   </div>
 </div>
 @include('user.more_info')

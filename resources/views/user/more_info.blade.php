@@ -3,7 +3,7 @@
   <div class="modal-dialog modal-dialog-scrollable" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h3 class="modal-title" id="moreInfoModalLabel"><strong>User Information</strong></h3>
+        <h3 class="modal-title" id="moreInfoModalLabel"><strong>Your Information</strong></h3>
         <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close" id="modalCloseBtn">
           <span aria-hidden="true">&times;</span>
         </button>
@@ -22,12 +22,6 @@
         <p><strong>Account Status:</strong> <span id="modalStatus"></span></p>
       </div>
       <div class="modal-footer">
-        <button id="modalApproveBtn" class="btn btn-success approve-btn">
-          <i class="fa fa-check"></i> Approve
-        </button>
-        <button id="modalRejectBtn" class="btn btn-danger reject-btn">
-          <i class="fa fa-x"></i> Reject
-        </button>
         <button class="btn btn-danger" data-bs-dismiss="modal" id="modalCloseButton" title="View">Close</button>
       </div>
     </div>

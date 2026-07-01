@@ -114,15 +114,15 @@
     width: 100%;
   }
   /* Lock Image Style - Centered and Smaller */
-  .lock-image {
+  /* .lock-image {
     position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    width: 100px;  /* Smaller size */
-    height: 100px; /* Smaller size */
+    width: 100px;
+    height: 100px;
     z-index: 10;
-  }
+  } */
   #newTable_wrapper {
     width: 100%;
     overflow: auto;
