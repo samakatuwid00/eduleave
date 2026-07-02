@@ -3,26 +3,30 @@
 namespace App\Mail;
 
 use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
 
-class CustomResetPasswordMail extends Mailable
+class CustomResetPasswordMail extends Mailable implements ShouldQueue
 {
     use Queueable, SerializesModels;
 
+    public int $tries = 3;
+
+    public array $backoff = [60, 300];
+
     public $user;
+
     public $url;
 
     /**
      * Create a new message instance.
-     *
-     * @param $user
-     * @param $url
      */
     public function __construct($user, $url)
     {
         $this->user = $user;
         $this->url = $url;
+        $this->onQueue('mail')->afterCommit();
     }
 
     /**
@@ -33,6 +37,6 @@ class CustomResetPasswordMail extends Mailable
     public function build()
     {
         return $this->subject('Password Reset Request')
-                    ->view('auth.custom_reset_password');  // your custom Blade view
+            ->view('auth.custom_reset_password');  // your custom Blade view
     }
 }

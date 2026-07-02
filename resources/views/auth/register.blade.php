@@ -6,6 +6,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" href="{{ asset('assets/images/icons8-leave-48.png') }}" type="image/png">
     <title>Register</title>
+    @if (config('services.turnstile.enabled'))
+        <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+    @endif
 </head>
 
 <body>
@@ -240,6 +243,14 @@
                             <a href="{{ route('login') }}">Log In</a>
                         </h3>
                     </div>
+                    @if (config('services.turnstile.enabled'))
+                        <div class="center">
+                            <div class="cf-turnstile" data-sitekey="{{ config('services.turnstile.site_key') }}"></div>
+                        </div>
+                        @error('cf-turnstile-response')
+                            <div class="center"><span class="error">{{ $message }}</span></div>
+                        @enderror
+                    @endif
                     <div class="center">
                         <button type="submit" class="submit">
                             <span class="btnText">Submit</span>

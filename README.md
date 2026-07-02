@@ -7,6 +7,14 @@
 <a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
 </p>
 
+## EduLeave transactional mail
+
+Transactional email is stored in the database-backed `mail` queue and sent by the Laravel scheduler at a maximum of five jobs per minute.
+
+- For local development, use `composer run dev`. It now starts `php artisan schedule:work` together with the application.
+- If the application is served through Apache or another command, keep `php artisan schedule:work` running in a separate terminal.
+- In production, configure one cron job to run `php artisan schedule:run` every minute. Do not run a separate worker against the `mail` queue because that bypasses the delivery limit.
+
 ## About Laravel
 
 Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:

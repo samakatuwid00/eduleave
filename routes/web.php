@@ -1,11 +1,9 @@
 <?php
 
 use App\Http\Controllers\AdminController;
-use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\ExcelUploadController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\ResetPasswordController;
 use App\Http\Controllers\UserController;
 use App\Models\PersonnelType;
 use Illuminate\Support\Facades\Route;
@@ -87,18 +85,3 @@ Route::middleware(['auth', 'admin'])->group(function () {
 Route::get('/get-remarks', [AdminController::class, 'getRemarks'])
     ->name('get.remarks')
     ->middleware(['auth']);
-
-// Email Verification
-Route::middleware('auth')->group(function () {
-    Route::get('/email/verify', [ResetPasswordController::class, 'verifyNotice'])->name('verification.notice');
-    Route::get('/email/verify/{id}/{hash}', [ResetPasswordController::class, 'verifyEmail'])->name('verification.verify');
-    Route::post('/email/verification-notification', [ResetPasswordController::class, 'verifySend'])
-        ->middleware(['throttle:6,1'])
-        ->name('verification.send');
-});
-
-// Approve and Reject Email Notification
-Route::post('/admin/users/send-approval-email/{userId}', [ResetPasswordController::class, 'sendApprovalEmail']);
-Route::post('/admin/users/send-rejection-email/{userId}', [ResetPasswordController::class, 'sendRejectionEmail']);
-
-// Route::post('register-again/{user_id}', [RegisteredUserController::class, 'registerAgain'])->name('register-again');

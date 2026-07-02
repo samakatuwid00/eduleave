@@ -55,3 +55,7 @@ Thumbs.db
 # Graphify files
 graphify-out/
 graphify_ignore_guide.md
+
+# OpenSpec files
+openspec/
+SKILL.md

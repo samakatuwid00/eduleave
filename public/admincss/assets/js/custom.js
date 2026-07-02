@@ -170,29 +170,6 @@ $(document).ready(function () {
                             response.message,
                             "success"
                         ).then(() => {
-                            // Send the approval email
-                            $.ajax({
-                                url:
-                                    "/admin/users/send-approval-email/" +
-                                    userId, // URL to send email
-                                method: "POST",
-                                headers: {
-                                    "X-CSRF-TOKEN": $(
-                                        'meta[name="csrf-token"]'
-                                    ).attr("content"),
-                                },
-                                success: function (emailResponse) {
-                                    console.log("Email sent successfully");
-                                },
-                                error: function () {
-                                    Swal.fire(
-                                        "Error!",
-                                        "Failed to send approval email. Please try again.",
-                                        "error"
-                                    );
-                                },
-                            });
-
                             $("#moreInfoModal").modal("hide"); // Hide modal
                             location.reload(); // Reload the page
                             localStorage.setItem(
@@ -242,29 +219,6 @@ $(document).ready(function () {
                             response.message,
                             "success"
                         ).then(() => {
-                            // Send the approval email
-                            $.ajax({
-                                url:
-                                    "/admin/users/send-rejection-email/" +
-                                    userId, // URL to send email
-                                method: "POST",
-                                headers: {
-                                    "X-CSRF-TOKEN": $(
-                                        'meta[name="csrf-token"]'
-                                    ).attr("content"),
-                                },
-                                success: function (emailResponse) {
-                                    console.log("Email sent successfully");
-                                },
-                                error: function () {
-                                    Swal.fire(
-                                        "Error!",
-                                        "Failed to send rejection email. Please try again.",
-                                        "error"
-                                    );
-                                },
-                            });
-
                             $("#moreInfoModal").modal("hide"); // Hide modal
                             location.reload(); // Reload the page
                             localStorage.setItem(
@@ -315,28 +269,6 @@ $(document).ready(function () {
                             response.message,
                             "success"
                         ).then(() => {
-                            // Send the approval email
-                            $.ajax({
-                                url:
-                                    "/admin/users/send-approval-email/" +
-                                    userId, // URL to send email
-                                method: "POST",
-                                headers: {
-                                    "X-CSRF-TOKEN": $(
-                                        'meta[name="csrf-token"]'
-                                    ).attr("content"),
-                                },
-                                success: function (emailResponse) {
-                                    console.log("Email sent successfully");
-                                },
-                                error: function () {
-                                    Swal.fire(
-                                        "Error!",
-                                        "Failed to send approval email. Please try again.",
-                                        "error"
-                                    );
-                                },
-                            });
                             $("#moreInfoModal").modal("hide"); // Hide modal
                             location.reload(); // Reload the page
                             localStorage.setItem(
@@ -387,29 +319,6 @@ $(document).ready(function () {
                             response.message,
                             "success"
                         ).then(() => {
-                            // Send the approval email
-                            $.ajax({
-                                url:
-                                    "/admin/users/send-rejection-email/" +
-                                    userId, // URL to send email
-                                method: "POST",
-                                headers: {
-                                    "X-CSRF-TOKEN": $(
-                                        'meta[name="csrf-token"]'
-                                    ).attr("content"),
-                                },
-                                success: function (emailResponse) {
-                                    console.log("Email sent successfully");
-                                },
-                                error: function () {
-                                    Swal.fire(
-                                        "Error!",
-                                        "Failed to send rejection email. Please try again.",
-                                        "error"
-                                    );
-                                },
-                            });
-
                             $("#moreInfoModal").modal("hide"); // Hide modal
                             location.reload(); // Reload the page
                             localStorage.setItem(

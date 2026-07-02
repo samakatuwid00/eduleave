@@ -2,11 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\UserApprovedMail;
+use App\Mail\UserRejectedMail;
 use App\Models\CardInfo;
 use App\Models\EmployeeProfile;
 use App\Models\PersonnelType;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 
 class AdminController extends Controller
 {
@@ -69,28 +73,64 @@ class AdminController extends Controller
     {
         $user = User::find($id);
 
-        if ($user) {
-            $user->status = 'active'; // Set the status to 'active'
-            $user->save();
-
-            return response()->json(['message' => 'User approved successfully!']);
+        if (! $user) {
+            return response()->json(['message' => 'User not found!'], 404);
         }
 
-        return response()->json(['message' => 'User not found!'], 404);
+        $notificationQueued = DB::transaction(function () use ($user) {
+            $updated = User::query()
+                ->whereKey($user->getKey())
+                ->where('status', 'pending')
+                ->update(['status' => 'active']);
+
+            if (! $updated) {
+                return false;
+            }
+
+            $user->refresh();
+            Mail::to($user->email)->queue(new UserApprovedMail($user));
+
+            return true;
+        });
+
+        return response()->json([
+            'message' => $notificationQueued
+                ? 'User approved successfully!'
+                : 'User status was already decided.',
+            'notification_queued' => $notificationQueued,
+        ]);
     }
 
     public function rejectUser($id)
     {
         $user = User::find($id);
 
-        if ($user) {
-            $user->status = 'rejected'; // Set the status to 'rejected'
-            $user->save();
-
-            return response()->json(['message' => 'User rejected successfully!']);
+        if (! $user) {
+            return response()->json(['message' => 'User not found!'], 404);
         }
 
-        return response()->json(['message' => 'User not found!'], 404);
+        $notificationQueued = DB::transaction(function () use ($user) {
+            $updated = User::query()
+                ->whereKey($user->getKey())
+                ->where('status', 'pending')
+                ->update(['status' => 'rejected']);
+
+            if (! $updated) {
+                return false;
+            }
+
+            $user->refresh();
+            Mail::to($user->email)->queue(new UserRejectedMail($user));
+
+            return true;
+        });
+
+        return response()->json([
+            'message' => $notificationQueued
+                ? 'User rejected successfully!'
+                : 'User status was already decided.',
+            'notification_queued' => $notificationQueued,
+        ]);
     }
 
     public function leave_cards()
