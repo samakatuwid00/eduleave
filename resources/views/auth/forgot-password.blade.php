@@ -21,7 +21,7 @@
                 <i class="fas fa-arrow-left"></i>
             </a>
         </div>
-        <form method="POST" action="{{ route('pass.request') }}" id="forgotPasswordForm">
+        <form method="POST" action="{{ route('password.email') }}" id="forgotPasswordForm">
             @csrf
             @if (session('status'))
                 <div class="status-message">{{ session('status') }}</div>

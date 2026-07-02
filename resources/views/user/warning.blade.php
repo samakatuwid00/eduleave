@@ -3,7 +3,7 @@
 <head>
   @include('user.css')
 </head>
-<body>
+<body data-card-type="{{ $profile->personnelType->code }}">
   <div class="main-wrapper">
     @include('user.header')
     @include('user.sidebar')
@@ -29,7 +29,7 @@
                       class="employee-link more-info-warning-btn" 
                       data-id="{{ $user->id ?? '' }}" 
                       title="View Employee Info">
-                      ({{ $user->employee_number ?? 'N/A' }})
+                      ({{ $profile->employee_number }})
                     </a>
                   </h5>
               </div>

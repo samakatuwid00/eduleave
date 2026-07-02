@@ -51,3 +51,7 @@ Thumbs.db
 *.swp
 *.swo
 *~
+
+# Graphify files
+graphify-out/
+graphify_ignore_guide.md

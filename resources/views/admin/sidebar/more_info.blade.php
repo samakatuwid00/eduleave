@@ -11,6 +11,7 @@
       <div class="modal-body">
         <p><strong>Name:</strong> <span id="modalName"></span></p>
         <p><strong>Email:</strong> <span id="modalEmail"></span></p>
+        <p><strong>Personnel Type:</strong> <span id="modalPersonnelType"></span></p>
         <p><strong>Position:</strong> <span id="modalPosition"></span></p>
         <p><strong>Date Employed:</strong> <span id="modalDateEmployed"></span></p>
         <p><strong>Sex:</strong> <span id="modalSex"></span></p>

@@ -5,7 +5,7 @@
   @include('user.css')
   
 </head>
-<body>
+<body data-card-type="{{ $profile->personnelType->code }}">
 <div class="main-wrapper">
 
   @include ('user.header')

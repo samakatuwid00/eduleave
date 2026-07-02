@@ -32,15 +32,23 @@ $('#newTable').DataTable({
             // className: 'btn btn-danger', // Button styling
             title: function () {
               return 'Teachers Leave Data - ' + userName; // Use the user name dynamically in the title
-          }
+            },
+            exportOptions: {
+                columns: ':not(.no-export)'
+            },
         },
         {
             extend: 'pdfHtml5', // Export to PDF
             text: '<i class="fa fa-file-pdf"></i> PDF',
             // className: 'btn btn-danger', // Button styling
-            title: function () {
+            title: function () 
+            {
               return 'Teachers Leave Data - ' + userName; // Use the user name dynamically in the title
-          }
+            },
+            exportOptions: {
+                columns: ':not(.no-export)'
+            },
+            orientation: 'landscape',
         },
         {
             extend: 'print', // Print the table
@@ -48,7 +56,18 @@ $('#newTable').DataTable({
             // className: 'btn btn-danger', // Button styling
             title: function () {
               return 'Teachers Leave Data - ' + userName; // Use the user name dynamically in the title
-          }
+            },
+            exportOptions: {
+                columns: ':not(.no-export)'
+            },
+            customize: function (win) {
+                $(win.document.head).append(
+                    '<style>' +
+                    '@page { size: landscape; }' +
+                    'table { font-size: 10px; }' +
+                    '</style>'
+                );
+            },
         }
     ]
 });
@@ -371,6 +390,12 @@ $(document).ready(function () {
         var row = $(this).closest("tr");
         var id = row.data("id"); // Get the row ID
         var updatedData = {};
+        var cardType = document.body.dataset.cardType;
+
+        if (!cardType) {
+            alertify.error("Unable to determine the leave-card type.");
+            return;
+        }
 
         row.find(".editable-cell").each(function () {
             var cell = $(this);
@@ -381,7 +406,7 @@ $(document).ready(function () {
         });
 
         $.ajax({
-            url: `/admin/card_info/${id}`,
+            url: `/admin/card_info/${encodeURIComponent(cardType)}/${id}`,
             type: "PUT",
             data: updatedData,
             success: function (response) {
@@ -408,13 +433,19 @@ $(document).ready(function () {
     $(".btn-delete").on("click", function () {
         var row = $(this).closest("tr");
         var id = row.data("id"); // Get the row ID
+        var cardType = document.body.dataset.cardType;
+
+        if (!cardType) {
+            alertify.error("Unable to determine the leave-card type.");
+            return;
+        }
 
         alertify.confirm(
             "Warning!",
             "Are you sure you want to delete this row?",
             function () {
                 $.ajax({
-                    url: `/admin/card_info/${id}`,
+                    url: `/admin/card_info/${encodeURIComponent(cardType)}/${id}`,
                     type: "DELETE",
                     success: function (response) {
                         row.remove(); // Remove the row from the table

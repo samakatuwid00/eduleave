@@ -2,14 +2,11 @@
 
 namespace App\Models;
 
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Notifications\Notifiable;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
-use App\Notifications\CustomResetPasswordNotification;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
-// use Illuminate\Contracts\Auth\CanResetPassword;
-use Illuminate\Database\Eloquent\Model; // Make sure this is imported
+use Illuminate\Notifications\Notifiable;
 
 class User extends Authenticatable implements MustVerifyEmail
 {
@@ -25,15 +22,6 @@ class User extends Authenticatable implements MustVerifyEmail
         'email',
         'phone',
         'password',
-        'position',
-        'date_employed',
-        'sex',
-        'date_of_birth',
-        'place_of_birth',
-        'employee_number',
-        'personnel',
-        'station',
-        'civil_status',
     ];
 
     /**
@@ -56,14 +44,19 @@ class User extends Authenticatable implements MustVerifyEmail
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
-            'date_employed' => 'date',
-            'date_of_birth' => 'date',
         ];
     }
+
+    public function employeeProfile(): HasOne
+    {
+        return $this->hasOne(EmployeeProfile::class, 'user_id');
+    }
+
     public function isAdmin()
     {
         return $this->admin;  // Assumes 'is_admin' field exists
     }
+
     public function Pending()
     {
         return $this->pending;  // Assumes 'is_admin' field exists

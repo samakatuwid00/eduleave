@@ -2,96 +2,221 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User;
-use App\Models\CardInfo;
+use App\Models\EmployeeProfile;
+use App\Models\PersonnelType;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Http\Response;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 use Shuchkin\SimpleXLSX;
 use Shuchkin\SimpleXLSXGen;
-use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\HeaderUtils;
 
 class ExcelUploadController extends Controller
 {
-    public function upload(Request $request, $employee_number)
+    public function upload(Request $request, string $cardType, string $employeeNumber): RedirectResponse
     {
-        // Validate file input
         $request->validate([
-            'excel_file' => 'required|file|mimes:xlsx,xls',
+            'excel_file' => ['required', 'file', 'extensions:xlsx', 'max:10240'],
         ]);
-    
-        // Retrieve the uploaded file
-        $file = $request->file('excel_file');
-        $path = $file->getRealPath();
-    
-        // Read the Excel file using SimpleXLSX
-        if ($xlsx = SimpleXLSX::parse($path)) {
-            // Loop through the rows and extract data
-            foreach ($xlsx->rows() as $row) {
-                // Skip the header row if necessary
-                if ($row[0] === 'Inclusive Period') continue; // Skip the header row
-    
-                // Ensure values are valid and handle empty or missing numeric values
-                $no_of_days_credited = is_numeric($row[2]) ? $row[2] : 0;
-                $no_days_leave = is_numeric($row[5]) ? $row[5] : 0;
-                $leave_without_pay = is_numeric($row[6]) ? $row[6] : 0;
-                $service_cred_bal = is_numeric($row[7]) ? $row[7] : 0;
 
-                // Insert each row into the database
-                CardInfo::create([
-                    'emp_num' => $employee_number,  // Use the employee_number from route or session
-                    'inclusive_period' => $row[0],  // First column is inclusive_period now
-                    'nature_of_activity' => $row[1],
-                    'no_of_days_credited' => $no_of_days_credited,  // Handle null or invalid
-                    'dso_no_vsr' => $row[3],
-                    'inclusive_dates' => $row[4],
-                    'no_days_leave' => $no_days_leave,  // Handle null or invalid
-                    'leave_without_pay' => $leave_without_pay,  // Handle null or invalid
-                    'service_cred_bal' => $service_cred_bal,  // Handle null or invalid
-                    'nature_of_leave' => $row[8],
-                    'dso_no_rol' => $row[9],
-                    'remarks' => $row[10],
-                ]);
-            }
-    
-            return back()->with('success', 'Excel file has been uploaded successfully.');
+        $profile = $this->profileForCardType($employeeNumber, $cardType);
+        $xlsx = SimpleXLSX::parse($request->file('excel_file')->getRealPath());
+
+        if (! $xlsx) {
+            throw ValidationException::withMessages([
+                'excel_file' => 'The Excel file could not be read. Please use the downloaded template.',
+            ]);
         }
-    
-        return back()->with('error', 'Failed to read the Excel file.');
+
+        $rows = $xlsx->rows();
+        $headers = $this->headersFor($cardType);
+
+        if ($rows === [] || ! $this->headersMatch($rows[0], $headers)) {
+            throw ValidationException::withMessages([
+                'excel_file' => "The workbook does not match the {$profile->personnelType->name} leave-card template.",
+            ]);
+        }
+
+        $records = [];
+
+        foreach (array_slice($rows, 1) as $index => $row) {
+            if ($this->rowIsEmpty($row)) {
+                continue;
+            }
+
+            $rowNumber = $index + 2;
+            $records[] = match ($cardType) {
+                PersonnelType::CODE_TEACHING => $this->teachingRecord($row, $rowNumber),
+                PersonnelType::CODE_NON_TEACHING => $this->nonTeachingRecord($row, $rowNumber),
+            };
+        }
+
+        if ($records === []) {
+            throw ValidationException::withMessages([
+                'excel_file' => 'The workbook contains no leave-card rows to import.',
+            ]);
+        }
+
+        DB::transaction(function () use ($profile, $cardType, $records) {
+            match ($cardType) {
+                PersonnelType::CODE_TEACHING => $profile->teachingLeaveCards()->createMany($records),
+                PersonnelType::CODE_NON_TEACHING => $profile->nonTeachingLeaveCards()->createMany($records),
+            };
+        });
+
+        return back()->with('success', count($records).' leave-card row(s) imported successfully.');
     }
 
-    public function downloadTemplate($employee_number)
+    public function downloadTemplate(string $cardType, string $employeeNumber): Response
     {
-        // Retrieve the selected user's data by employee number
-        $user = User::where('employee_number', $employee_number)->first();
-    
-        if (!$user) {
-            return back()->with('error', 'User not found.');
+        $profile = $this->profileForCardType($employeeNumber, $cardType);
+        $xlsx = SimpleXLSXGen::fromArray([$this->headersFor($cardType)]);
+        $filename = "{$profile->user->name} - {$profile->personnelType->name} Leave Card Template.xlsx";
+
+        return response((string) $xlsx, 200, [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'Content-Disposition' => HeaderUtils::makeDisposition(
+                HeaderUtils::DISPOSITION_ATTACHMENT,
+                $filename,
+                Str::ascii($filename),
+            ),
+        ]);
+    }
+
+    private function profileForCardType(string $employeeNumber, string $cardType): EmployeeProfile
+    {
+        $profile = EmployeeProfile::with(['user', 'personnelType'])
+            ->where('employee_number', $employeeNumber)
+            ->firstOrFail();
+
+        if ($profile->personnelType->code !== $cardType) {
+            throw ValidationException::withMessages([
+                'card_type' => 'The selected leave-card format does not match this employee profile.',
+            ]);
         }
-    
-        $userName = $user->name ?? 'Unknown User';
-    
-        // Define the headers
-        $headers = [[
-            'Inclusive Period', 'Nature of Activity', 'No of Days Credited', 'DSO No VSR',
-            'Inclusive Dates', 'No Days Leave', 'Service Credit Balance', 'Leave Without Pay',
-            'Nature of Leave', 'DSO No ROL', 'Remarks'
-        ]];
-    
-        // Create the Excel file
-        $xlsx = SimpleXLSXGen::fromArray($headers);
-    
-        // Clear output buffering to prevent file corruption
-        if (ob_get_length()) {
-            ob_end_clean();
+
+        return $profile;
+    }
+
+    /** @return list<string> */
+    private function headersFor(string $cardType): array
+    {
+        return match ($cardType) {
+            PersonnelType::CODE_TEACHING => [
+                'Inclusive Period',
+                'Nature of Activity',
+                'No. of Days Credited',
+                'DSO No. (Vacation Service)',
+                'Inclusive Leave Dates',
+                'Days With Pay',
+                'Service Credit Balance',
+                'Days Without Pay',
+                'Nature of Leave',
+                'DSO No. (Record of Leave)',
+                'Remarks',
+            ],
+            PersonnelType::CODE_NON_TEACHING => [
+                'Period',
+                'Particulars',
+                'Vacation Leave Earned',
+                'Vacation Leave With Pay',
+                'Vacation Leave Balance',
+                'Vacation Leave Without Pay',
+                'Sick Leave Earned',
+                'Sick Leave With Pay',
+                'Sick Leave Balance',
+                'Sick Leave Without Pay',
+                'Date & Action On Application For Leave',
+            ],
+        };
+    }
+
+    private function headersMatch(array $actual, array $expected): bool
+    {
+        $actual = array_slice(array_pad($actual, count($expected), null), 0, count($expected));
+
+        return array_map($this->normalizeHeader(...), $actual)
+            === array_map($this->normalizeHeader(...), $expected);
+    }
+
+    private function normalizeHeader(mixed $value): string
+    {
+        return (string) Str::of((string) $value)
+            ->lower()
+            ->replaceMatches('/[^a-z0-9]+/', '');
+    }
+
+    private function rowIsEmpty(array $row): bool
+    {
+        foreach ($row as $value) {
+            if ($value !== null && trim((string) $value) !== '') {
+                return false;
+            }
         }
-    
-        // Set proper headers manually
-        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-        header('Content-Disposition: attachment; filename="' . $userName . ' - Template.xlsx"');
-        header('Cache-Control: max-age=0');
-        header('Expires: 0');
-        header('Pragma: public');
-    
-        // Stream the file
-        $xlsx->downloadAs($userName . ' - Template.xlsx');
-        exit;  // Ensure no further output occurs
+
+        return true;
+    }
+
+    private function teachingRecord(array $row, int $rowNumber): array
+    {
+        $row = array_pad($row, 11, null);
+
+        return [
+            'inclusive_period' => $this->nullableText($row[0]),
+            'nature_of_activity' => $this->nullableText($row[1]),
+            'days_credited' => $this->nullableNumber($row[2], $rowNumber, 'No. of Days Credited'),
+            'vacation_service_dso_number' => $this->nullableText($row[3]),
+            'inclusive_leave_dates' => $this->nullableText($row[4]),
+            'days_with_pay' => $this->nullableNumber($row[5], $rowNumber, 'Days With Pay'),
+            'service_credit_balance' => $this->nullableNumber($row[6], $rowNumber, 'Service Credit Balance'),
+            'days_without_pay' => $this->nullableNumber($row[7], $rowNumber, 'Days Without Pay'),
+            'nature_of_leave' => $this->nullableText($row[8]),
+            'record_of_leave_dso_number' => $this->nullableText($row[9]),
+            'remarks' => $this->nullableText($row[10]),
+        ];
+    }
+
+    private function nonTeachingRecord(array $row, int $rowNumber): array
+    {
+        $row = array_pad($row, 11, null);
+
+        return [
+            'period' => $this->nullableText($row[0]),
+            'particulars' => $this->nullableText($row[1]),
+            'vacation_leave_earned' => $this->nullableNumber($row[2], $rowNumber, 'Vacation Leave Earned'),
+            'vacation_leave_with_pay' => $this->nullableText($row[3]),
+            'vacation_leave_balance' => $this->nullableText($row[4]),
+            'vacation_leave_without_pay' => $this->nullableNumber($row[5], $rowNumber, 'Vacation Leave Without Pay'),
+            'sick_leave_earned' => $this->nullableNumber($row[6], $rowNumber, 'Sick Leave Earned'),
+            'sick_leave_with_pay' => $this->nullableNumber($row[7], $rowNumber, 'Sick Leave With Pay'),
+            'sick_leave_balance' => $this->nullableText($row[8]),
+            'sick_leave_without_pay' => $this->nullableText($row[9]),
+            'leave_application_action' => $this->nullableText($row[10]),
+        ];
+    }
+
+    private function nullableText(mixed $value): ?string
+    {
+        $value = trim((string) ($value ?? ''));
+
+        return $value === '' ? null : $value;
+    }
+
+    private function nullableNumber(mixed $value, int $rowNumber, string $column): int|float|null
+    {
+        if ($value === null || trim((string) $value) === '') {
+            return null;
+        }
+
+        if (! is_numeric($value)) {
+            throw ValidationException::withMessages([
+                'excel_file' => "Row {$rowNumber}: {$column} must be numeric.",
+            ]);
+        }
+
+        return $value + 0;
     }
 }

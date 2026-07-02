@@ -4,6 +4,7 @@
       <meta charset="UTF-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       <title>Log In</title>
+    <link rel="icon" href="{{ asset('assets/images/icons8-leave-48.png') }}" type="image/png">
     </head>
     <body>
         @include('auth.login_css')
@@ -81,8 +82,8 @@
                         <span class="error">{{ $message }}</span>
                     @enderror
                 </div>
-                @if (Route::has('pass.request'))
-                    <a href="{{ route('pass.request') }}" id="forgotPasswordLink">{{ __('Forgot your password?') }}</a>
+                @if (Route::has('password.request'))
+                    <a href="{{ route('password.request') }}" id="forgotPasswordLink">{{ __('Forgot your password?') }}</a>
                 @endif
 
                 <!-- Submit Button -->

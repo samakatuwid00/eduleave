@@ -2,33 +2,31 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\CardInfo;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use App\Models\User;
 
 class UserController extends Controller
 {
     public function userDashboard()
     {
-        // Get the currently authenticated user
-        $user = Auth::user();
+        $user = Auth::user()->loadMissing('employeeProfile.personnelType');
+        $profile = $user->employeeProfile;
 
-        // Fetch related card_info records using the employee_number
-        $cardInfoss = CardInfo::where('emp_num', operator: $user->employee_number)->get();
+        abort_if($profile === null, 404, 'Employee profile not found.');
 
-        // Return the view with the user and their card information
-        return view('user.dashboard', compact('user', 'cardInfoss'));
+        $cardInfoss = $profile->leaveCardQuery()
+            ->orderBy('id')
+            ->get();
+
+        return view('user.dashboard', compact('user', 'profile', 'cardInfoss'));
     }
+
     public function warning()
     {
-        // Get the currently authenticated user
-        $user = Auth::user();
+        $user = Auth::user()->loadMissing('employeeProfile.personnelType');
+        $profile = $user->employeeProfile;
 
-        // Fetch related card_info records using the employee_number
-        $cardInfoss = CardInfo::where('emp_num', operator: $user->employee_number)->get();
+        abort_if($profile === null, 404, 'Employee profile not found.');
 
-        // Return the view with the user and their card information
-        return view('user.warning', compact('user', 'cardInfoss'));
+        return view('user.warning', compact('user', 'profile'));
     }
 }

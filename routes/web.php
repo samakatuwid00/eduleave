@@ -1,17 +1,14 @@
 <?php
 
+use App\Http\Controllers\AdminController;
 use App\Http\Controllers\Auth\RegisteredUserController;
-use Illuminate\Http\Request;
+use App\Http\Controllers\ExcelUploadController;
+use App\Http\Controllers\HomeController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ResetPasswordController;
+use App\Http\Controllers\UserController;
+use App\Models\PersonnelType;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\{
-    HomeController,
-    UserController,
-    AdminController,
-    ProfileController,
-    ResetPasswordController,
-    ExcelUploadController,
-};
-use Illuminate\Foundation\Auth\EmailVerificationRequest;
 
 // Redirect root URL to welcome page
 Route::redirect('/', '/welcome');
@@ -32,7 +29,7 @@ Route::middleware('auth')->group(function () {
 });
 
 // Authentication Routes
-require __DIR__ . '/auth.php';
+require __DIR__.'/auth.php';
 
 // Admin Dashboard
 Route::get('/admin/dashboard', [HomeController::class, 'index'])
@@ -68,27 +65,28 @@ Route::get('/admin/leave_card/{employee_number}', [AdminController::class, 'show
 
 // Edit/Delete Rows of Leave Card
 Route::middleware(['auth', 'admin'])->group(function () {
-    Route::put('/admin/card_info/{id}', [AdminController::class, 'update']);
-    Route::delete('/admin/card_info/{id}', [AdminController::class, 'destroy']);
+    Route::put('/admin/card_info/{cardType}/{id}', [AdminController::class, 'update'])
+        ->whereIn('cardType', [PersonnelType::CODE_TEACHING, PersonnelType::CODE_NON_TEACHING])
+        ->whereNumber('id')
+        ->name('admin.card-info.update');
+    Route::delete('/admin/card_info/{cardType}/{id}', [AdminController::class, 'destroy'])
+        ->whereIn('cardType', [PersonnelType::CODE_TEACHING, PersonnelType::CODE_NON_TEACHING])
+        ->whereNumber('id')
+        ->name('admin.card-info.destroy');
     Route::post('/card-info/store', [AdminController::class, 'store']);
+
+    Route::post('/admin/leave_card/{cardType}/{employeeNumber}/import', [ExcelUploadController::class, 'upload'])
+        ->whereIn('cardType', [PersonnelType::CODE_TEACHING, PersonnelType::CODE_NON_TEACHING])
+        ->name('admin.leave-card.import');
+    Route::get('/admin/leave_card/{cardType}/{employeeNumber}/template', [ExcelUploadController::class, 'downloadTemplate'])
+        ->whereIn('cardType', [PersonnelType::CODE_TEACHING, PersonnelType::CODE_NON_TEACHING])
+        ->name('admin.leave-card.template');
 });
 
 // Remarks
 Route::get('/get-remarks', [AdminController::class, 'getRemarks'])
     ->name('get.remarks')
     ->middleware(['auth']);
-
-// Forgot Password (view form)
-Route::view('/forgot-password', 'auth.forgot-password')->name('pass.request');
-
-// Send password reset link (POST request)
-Route::post('/forgot-password', [ResetPasswordController::class, 'passwordEmail']);
-
-// Reset Password Form (GET request)
-Route::get('/reset-password/{token}', [ResetPasswordController::class, 'passwordReset'])->name('password.reset');
-
-// Update password (POST request)
-Route::post('/reset-password', [ResetPasswordController::class, 'passwordUpdate'])->name('pass.update');
 
 // Email Verification
 Route::middleware('auth')->group(function () {
@@ -99,13 +97,8 @@ Route::middleware('auth')->group(function () {
         ->name('verification.send');
 });
 
-//Approve and Reject Email Notification
+// Approve and Reject Email Notification
 Route::post('/admin/users/send-approval-email/{userId}', [ResetPasswordController::class, 'sendApprovalEmail']);
 Route::post('/admin/users/send-rejection-email/{userId}', [ResetPasswordController::class, 'sendRejectionEmail']);
 
 // Route::post('register-again/{user_id}', [RegisteredUserController::class, 'registerAgain'])->name('register-again');
-// Upload Excel File
-Route::post('/upload-excel/{employee_number}', [ExcelUploadController::class, 'upload'])->name('upload-excel');
-
-// Download Excel Template
-Route::get('/admin/leave_card/template/{employee_number}', [ExcelUploadController::class, 'downloadTemplate'])->name('download-template');

@@ -135,7 +135,7 @@
                                         <td>{{ $counter }}</td> <!-- Use manual counter -->
                                         <td>{{ $row->name }}</td>
                                         <td>{{ $row->email }}</td>
-                                        <td>{{ $row->employee_number }}</td>
+                                        <td>{{ $row->employeeProfile?->employee_number ?? 'N/A' }}</td>
                                         <td class="
                                             @if($row->status == 'rejected') status-rejected
                                             @elseif($row->status == 'active') status-approved

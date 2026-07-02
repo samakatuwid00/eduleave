@@ -34,6 +34,9 @@ $(document).ready(function () {
                 title: function () {
                     return "Teachers Leave Card - " + userName;
                 },
+                exportOptions: {
+                    columns: ':not(.no-export)'
+                },
             },
             {
                 extend: "pdfHtml5",
@@ -52,6 +55,17 @@ $(document).ready(function () {
                 title: function () {
                     return "Teachers Leave Card - " + userName;
                 },
+                exportOptions: {
+                    columns: ':not(.no-export)'
+                },
+                customize: function (win) {
+                    $(win.document.head).append(
+                        '<style>' +
+                        '@page { size: landscape; }' +
+                        'table { font-size: 10px; }' +
+                        '</style>'
+                    );
+                },
             },
         ],
     });
@@ -66,21 +80,20 @@ $(document).ready(function () {
             method: "GET",
             data: { id: userId }, // Send user ID to the server
             success: function (response) {
-                // Format the date_employed field
-                const dateEmployed = new Date(response.date_employed); // Convert to Date object
-                const formattedDate = dateEmployed.toISOString().split("T")[0]; // Get the date part
+                const displayValue = (value) => value || "N/A";
 
                 // Populate modal fields with the user details
                 $("#modalName").text(response.name);
                 $("#modalEmail").text(response.email);
-                $("#modalPosition").text(response.position);
-                $("#modalDateEmployed").text(formattedDate); // Display only the date
-                $("#modalSex").text(response.sex);
-                $("#modalDateOfBirth").text(response.date_of_birth);
-                $("#modalPlaceOfBirth").text(response.place_of_birth);
-                $("#modalEmployeeNumber").text(response.employee_number);
-                $("#modalStation").text(response.station);
-                $("#modalCivilStatus").text(response.civil_status);
+                $("#modalPersonnelType").text(displayValue(response.personnel_type));
+                $("#modalPosition").text(displayValue(response.position));
+                $("#modalDateEmployed").text(displayValue(response.date_employed));
+                $("#modalSex").text(displayValue(response.sex));
+                $("#modalDateOfBirth").text(displayValue(response.date_of_birth));
+                $("#modalPlaceOfBirth").text(displayValue(response.place_of_birth));
+                $("#modalEmployeeNumber").text(displayValue(response.employee_number));
+                $("#modalStation").text(displayValue(response.station));
+                $("#modalCivilStatus").text(displayValue(response.civil_status));
                 $("#modalStatus").text(
                     response.status.charAt(0).toUpperCase() +
                         response.status.slice(1)
@@ -424,58 +437,12 @@ $(document).ready(function () {
             // Get the employee number from the modal's Employee Number span
             const employeeNumber = $("#modalEmployeeNumber").text().trim();
 
-            if (employeeNumber) {
+            if (employeeNumber && employeeNumber !== "N/A") {
                 // Redirect to the leave card page with the employee number
                 window.location.href = `/admin/leave_card/${employeeNumber}`;
             } else {
                 alert("Employee number not found! Please try again.");
             }
-        });
-
-        // Attach click event for More Info buttons
-        $(document).on('click', '.more-info-btn', function() {
-            const userId = $(this).data("id"); // Get the user ID from the button
-
-            // Set user ID in the modal for later use
-            $("#moreInfoModal").data("user-id", userId);
-
-            // Make AJAX request to get user details
-            $.ajax({
-                url: "/get-user-details",
-                method: "GET",
-                data: { id: userId },
-                success: function (response) {
-                    // Populate modal fields with user details
-                    $("#modalName").text(response.name);
-                    $("#modalEmail").text(response.email);
-                    $("#modalPosition").text(response.position);
-                    $("#modalDateEmployed").text(
-                        new Date(response.date_employed)
-                            .toISOString()
-                            .split("T")[0]
-                    );
-                    $("#modalSex").text(response.sex);
-                    $("#modalDateOfBirth").text(response.date_of_birth);
-                    $("#modalPlaceOfBirth").text(response.place_of_birth);
-                    $("#modalEmployeeNumber").text(response.employee_number);
-                    $("#modalStation").text(response.station);
-                    $("#modalCivilStatus").text(response.civil_status);
-                    $("#modalStatus").text(
-                        response.status.charAt(0).toUpperCase() +
-                            response.status.slice(1)
-                    );
-
-                    // Show the modal
-                    $("#moreInfoModal").modal("show");
-                },
-                error: function () {
-                    Swal.fire(
-                        "Error!",
-                        "Failed to fetch user details. Please try again.",
-                        "error"
-                    );
-                },
-            });
         });
     });
 
@@ -539,6 +506,12 @@ $(document).ready(function () {
         $(document).on("click", ".btn-save", function () {
             var row = $(this).closest("tr");
             var updatedData = {};
+            var cardType = document.body.dataset.cardType;
+
+            if (!cardType) {
+                alertify.error("Unable to determine the leave-card type.");
+                return;
+            }
 
             row.find(".editable-cell").each(function () {
                 var cell = $(this);
@@ -549,7 +522,7 @@ $(document).ready(function () {
             });
 
             $.ajax({
-                url: `/admin/card_info/${row.data("id")}`,
+                url: `/admin/card_info/${encodeURIComponent(cardType)}/${row.data("id")}`,
                 type: "PUT",
                 data: updatedData,
                 headers: {
@@ -616,6 +589,12 @@ $(document).ready(function () {
         $(document).on("click", ".btn-delete", function () {
             var row = $(this).closest("tr");
             var globalRowIndex = table.row(row).index(); // Get global row index (across all pages)
+            var cardType = document.body.dataset.cardType;
+
+            if (!cardType) {
+                alertify.error("Unable to determine the leave-card type.");
+                return;
+            }
 
             alertify
                 .confirm(
@@ -624,7 +603,7 @@ $(document).ready(function () {
                         (globalRowIndex + 1), // Show global row number (1-based)
                     function () {
                         $.ajax({
-                            url: `/admin/card_info/${row.data("id")}`,
+                            url: `/admin/card_info/${encodeURIComponent(cardType)}/${row.data("id")}`,
                             type: "DELETE",
                             headers: {
                                 "X-CSRF-TOKEN": $(
@@ -910,17 +889,6 @@ function confirmUpload() {
     }).then((result) => {
         if (result.isConfirmed) {
             document.querySelector(".upload-form").submit();
-
-            // Display success message after the file is uploaded
-            Swal.fire({
-                title: "Success!",
-                text: "Your file has been uploaded successfully.",
-                icon: "success",
-                confirmButtonText: "OK",
-            }).then(() => {
-                // Optionally reload the page after clicking the "OK" button
-                location.reload(); // Reload the page after the success message closes
-            });
         } else {
             const uploadButton = document.getElementById("uploadButton");
             uploadButton.classList.remove("btn-success");

@@ -15,7 +15,7 @@
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
             <h2 style="margin: 0;">Forgot Password</h2>
         </div>
-        <form method="POST" action="{{ route('pass.update') }}" id="resetPasswordForm">
+        <form method="POST" action="{{ route('password.store') }}" id="resetPasswordForm">
             @csrf
             @error('email')
             <span class="error">{{ $message }}</span>
@@ -29,7 +29,7 @@
                 <span class="error">{{ $message }}</span>
             @enderror
 
-            <input type="hidden" name="token" value="{{ $token }}">
+            <input type="hidden" name="token" value="{{ $request->route('token') }}">
 
             <!-- Email Address -->
             <div class="input-box">
@@ -37,7 +37,7 @@
                     type="email" 
                     name="email" 
                     placeholder="Enter your email" 
-                    value="{{ old('email') }}" 
+                    value="{{ old('email', $request->email) }}"
                     required 
                     autofocus 
                 >

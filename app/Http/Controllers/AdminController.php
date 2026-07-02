@@ -2,50 +2,62 @@
 
 namespace App\Http\Controllers;
 
-use Carbon\Carbon;
-use App\Models\User;
 use App\Models\CardInfo;
+use App\Models\EmployeeProfile;
+use App\Models\PersonnelType;
+use App\Models\User;
 use Illuminate\Http\Request;
 
 class AdminController extends Controller
 {
     public function all_users()
     {
-        $users = User::all();
-        return view('admin.sidebar.all_users')->with('users',$users);
+        $users = User::with('employeeProfile.personnelType')->get();
+
+        return view('admin.sidebar.all_users')->with('users', $users);
     }
+
     public function pending_users()
     {
-        $users = User::all();
-        return view('admin.sidebar.pending_users')->with('users',$users);
+        $users = User::with('employeeProfile.personnelType')->get();
+
+        return view('admin.sidebar.pending_users')->with('users', $users);
     }
+
     public function approved_users()
     {
-        $users = User::all();
-        return view('admin.sidebar.approved_users')->with('users',$users);
+        $users = User::with('employeeProfile.personnelType')->get();
+
+        return view('admin.sidebar.approved_users')->with('users', $users);
     }
+
     public function rejected_users()
     {
-        $users = User::all();
-        return view('admin.sidebar.rejected_users')->with('users',$users);
+        $users = User::with('employeeProfile.personnelType')->get();
+
+        return view('admin.sidebar.rejected_users')->with('users', $users);
     }
+
     public function getUserDetails(Request $request)
     {
         $userId = $request->input('id');
-        $user = User::find($userId);
+        $user = User::with('employeeProfile.personnelType')->find($userId);
 
         if ($user) {
+            $profile = $user->employeeProfile;
+
             return response()->json([
                 'name' => $user->name,
                 'email' => $user->email,
-                'position' => $user->position,
-                'date_employed' => Carbon::parse($user->date_employed)->toDateString(),
-                'sex' => $user->sex,
-                'date_of_birth' => Carbon::parse($user->date_of_birth)->toDateString(),
-                'place_of_birth' => $user->place_of_birth,
-                'employee_number' => $user->employee_number,
-                'station' => $user->station,
-                'civil_status' => $user->civil_status,
+                'position' => $profile?->position,
+                'date_employed' => $profile?->date_employed?->toDateString(),
+                'sex' => $profile?->sex,
+                'date_of_birth' => $profile?->date_of_birth?->toDateString(),
+                'place_of_birth' => $profile?->place_of_birth,
+                'employee_number' => $profile?->employee_number,
+                'station' => $profile?->station,
+                'civil_status' => $profile?->civil_status,
+                'personnel_type' => $profile?->personnelType?->name,
                 'status' => $user->status,
             ]);
         }
@@ -80,40 +92,44 @@ class AdminController extends Controller
 
         return response()->json(['message' => 'User not found!'], 404);
     }
-    
+
     public function leave_cards()
     {
-        $users = User::all();
-        return view('admin.sidebar.leave_cards')->with('users',$users);
+        $users = User::with('employeeProfile.personnelType')->get();
+
+        return view('admin.sidebar.leave_cards')->with('users', $users);
     }
 
     public function show($employee_number)
     {
-        // Fetch the user details
-        $user = User::where('employee_number', $employee_number)->first();
-        
-        // Fetch all cardInfo for the specific user, ordered by 'id'
-        $cardInfoss = CardInfo::where('emp_num', $employee_number)
-                              ->orderBy('id') // Orders by 'id' ascending
-                              ->get();
-        
-        return view('admin.sidebar.individual_lc', compact('cardInfoss', 'user'));
-    }    
-        
-    public function update(Request $request, $id)
+        $profile = EmployeeProfile::with(['user', 'personnelType'])
+            ->where('employee_number', $employee_number)
+            ->firstOrFail();
+        $user = $profile->user;
+        $cardInfoss = $profile->leaveCardQuery()
+            ->orderBy('id')
+            ->get();
+
+        return view('admin.sidebar.individual_lc', compact('cardInfoss', 'profile', 'user'));
+    }
+
+    public function update(Request $request, string $cardType, int $id)
     {
-        $cardInfo = CardInfo::findOrFail($id);
-        $cardInfo->update($request->all());
+        $modelClass = PersonnelType::leaveCardModelClass($cardType);
+        $leaveCard = $modelClass::query()->findOrFail($id);
+        $leaveCard->update($this->validatedLeaveCardAttributes($request, $cardType));
+
         return response()->json(['success' => true, 'message' => 'Row updated successfully.']);
     }
 
-    public function destroy($id)
+    public function destroy(string $cardType, int $id)
     {
-        $cardInfo = CardInfo::findOrFail($id);
-        $cardInfo->delete();
+        $modelClass = PersonnelType::leaveCardModelClass($cardType);
+        $modelClass::query()->findOrFail($id)->delete();
+
         return response()->json(['success' => true, 'message' => 'Row deleted successfully.']);
     }
-    
+
     public function store(Request $request)
     {
         // Validate incoming request
@@ -129,9 +145,9 @@ class AdminController extends Controller
             'nature_of_leave' => 'nullable|string|max:255',
             'dso_no_rol' => 'nullable|string|max:255',
             'remarks' => 'nullable|string|max:255',
-            'employee_number' => 'required|exists:users,employee_number', 
+            'employee_number' => 'required|exists:employee_profiles,employee_number',
         ]);
-    
+
         try {
             // Create a new entry in the card_info table, including the user_id
             $cardInfo = CardInfo::create([
@@ -148,7 +164,7 @@ class AdminController extends Controller
                 'remarks' => $request->remarks,
                 'emp_num' => $request->employee_number,
             ]);
-    
+
             return response()->json([
                 'success' => true,
                 'message' => 'Vacation service rendered added successfully!',
@@ -161,7 +177,7 @@ class AdminController extends Controller
             ], 500);
         }
     }
-    
+
     public function getRemarks(Request $request)
     {
         $cardInfoId = $request->id;
@@ -179,5 +195,63 @@ class AdminController extends Controller
             'error' => 'Record not found.',
         ], 404);
     }
-}
 
+    private function validatedLeaveCardAttributes(Request $request, string $cardType): array
+    {
+        $validated = $request->validate([
+            'inclusive_period' => 'nullable|string|max:255',
+            'nature_of_activity' => 'nullable|string|max:255',
+            'no_of_days_credited' => 'nullable|numeric|min:0',
+            'dso_no_vsr' => 'nullable|string|max:255',
+            'inclusive_dates' => 'nullable|string|max:255',
+            'no_days_leave' => 'nullable|numeric|min:0',
+            'service_cred_bal' => 'nullable|numeric|min:0',
+            'leave_without_pay' => 'nullable|numeric|min:0',
+            'nature_of_leave' => 'nullable|string|max:255',
+            'dso_no_rol' => 'nullable|string|max:255',
+            'remarks' => 'nullable|string|max:255',
+        ]);
+
+        $attributes = [];
+
+        foreach ($this->leaveCardFieldMap($cardType) as $requestField => $column) {
+            if (array_key_exists($requestField, $validated)) {
+                $attributes[$column] = $validated[$requestField];
+            }
+        }
+
+        return $attributes;
+    }
+
+    private function leaveCardFieldMap(string $cardType): array
+    {
+        return match ($cardType) {
+            PersonnelType::CODE_TEACHING => [
+                'inclusive_period' => 'inclusive_period',
+                'nature_of_activity' => 'nature_of_activity',
+                'no_of_days_credited' => 'days_credited',
+                'dso_no_vsr' => 'vacation_service_dso_number',
+                'inclusive_dates' => 'inclusive_leave_dates',
+                'no_days_leave' => 'days_with_pay',
+                'service_cred_bal' => 'service_credit_balance',
+                'leave_without_pay' => 'days_without_pay',
+                'nature_of_leave' => 'nature_of_leave',
+                'dso_no_rol' => 'record_of_leave_dso_number',
+                'remarks' => 'remarks',
+            ],
+            PersonnelType::CODE_NON_TEACHING => [
+                'inclusive_period' => 'period',
+                'nature_of_activity' => 'particulars',
+                'no_of_days_credited' => 'vacation_leave_earned',
+                'dso_no_vsr' => 'vacation_leave_with_pay',
+                'inclusive_dates' => 'vacation_leave_balance',
+                'no_days_leave' => 'vacation_leave_without_pay',
+                'leave_without_pay' => 'sick_leave_earned',
+                'service_cred_bal' => 'sick_leave_with_pay',
+                'nature_of_leave' => 'sick_leave_balance',
+                'dso_no_rol' => 'sick_leave_without_pay',
+                'remarks' => 'leave_application_action',
+            ],
+        };
+    }
+}

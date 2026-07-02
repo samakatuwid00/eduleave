@@ -80,7 +80,7 @@
             <textarea id="remarks" class="form-control" placeholder="Enter Remarks" rows="4" style="resize: none;"></textarea>
           </div>
         </div>
-        <input type="hidden" id="employee_number" value="{{ $user->employee_number ?? '' }}">
+        <input type="hidden" id="employee_number" value="{{ $profile->employee_number ?? '' }}">
       </div>
       <div class="modal-footer">
         <!-- Navigation Buttons -->
