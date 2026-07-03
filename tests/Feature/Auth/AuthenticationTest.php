@@ -20,6 +20,30 @@ test('users can authenticate using the login screen', function () {
     $response->assertRedirect(route('user/dashboard', absolute: false));
 });
 
+test('unverified users are redirected to the verification notice after login', function () {
+    $user = User::factory()->unverified()->create(['status' => 'pending']);
+
+    $response = $this->post('/login', [
+        'email' => $user->email,
+        'password' => 'password',
+    ]);
+
+    $this->assertAuthenticated();
+    $response->assertRedirect(route('verification.notice', absolute: false));
+});
+
+test('verified pending users are redirected to their warning dashboard after login', function () {
+    $user = User::factory()->create(['status' => 'pending']);
+
+    $response = $this->post('/login', [
+        'email' => $user->email,
+        'password' => 'password',
+    ]);
+
+    $this->assertAuthenticated();
+    $response->assertRedirect(route('/user/dashboard/warning', absolute: false));
+});
+
 test('users can not authenticate with invalid password', function () {
     $user = User::factory()->create();
 

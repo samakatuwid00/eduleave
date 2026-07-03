@@ -64,6 +64,17 @@ class User extends Authenticatable implements MustVerifyEmail
         $this->notify(new QueuedResetPassword($token));
     }
 
+    public function dashboardRouteName(): string
+    {
+        if ($this->usertype === 'admin') {
+            return 'admin.dashboard';
+        }
+
+        return $this->status === 'pending'
+            ? '/user/dashboard/warning'
+            : 'user/dashboard';
+    }
+
     public function isAdmin()
     {
         return $this->admin;  // Assumes 'is_admin' field exists

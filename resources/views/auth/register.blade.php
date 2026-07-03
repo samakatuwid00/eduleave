@@ -244,7 +244,7 @@
                         </h3>
                     </div>
                     @if (config('services.turnstile.enabled'))
-                        <div class="center">
+                        <div class="center turnstile-container">
                             <div class="cf-turnstile" data-sitekey="{{ config('services.turnstile.site_key') }}"></div>
                         </div>
                         @error('cf-turnstile-response')

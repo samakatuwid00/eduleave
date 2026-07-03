@@ -7,6 +7,8 @@ test('registration screen can be rendered', function () {
 });
 
 test('new users can register', function () {
+    config()->set('services.turnstile.enabled', false);
+
     $response = $this->post('/register', [
         'name' => 'Test User',
         'position' => 'Teacher I',

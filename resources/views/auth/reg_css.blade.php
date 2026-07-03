@@ -10,9 +10,14 @@
     }
 
     .center {
-    display: flex;
-    justify-content: center;
-    align-items: center;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+    .turnstile-container {
+        width: 100%;
+        margin-top: 16px;
+        overflow-x: auto;
     }
     form .text {
     color: #333;
@@ -40,8 +45,9 @@
     body {
         min-height: 100vh;
         display: flex;
-        align-items: center;
+        align-items: flex-start;
         justify-content: center;
+        padding: 20px 0;
         background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), 
             url('{{ asset('usercss/assets/img/deped1.jpg') }}') no-repeat center center/cover;
     }
@@ -73,11 +79,10 @@
     .container form{
         position: relative;
         margin-top: 16px;
-        min-height: 490px;
-        overflow: hidden;
     }
     .container form .form{
-        position: absolute;
+        position: relative;
+        width: 100%;
         transition: 0.3s ease;
     }
     .container form .form.second{
@@ -202,18 +207,15 @@
     }
 
     @media (max-width: 750px) {
-        .container form{
-            overflow-y: scroll;
-        }
-        .container form::-webkit-scrollbar{
-        display: none;
-        }
         form .fields .input-field{
             width: calc(100% / 2 - 15px);
         }
     }
 
     @media (max-width: 550px) {
+        .container {
+            padding: 20px 15px;
+        }
         form .fields .input-field{
             width: 100%;
         }
