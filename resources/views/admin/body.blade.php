@@ -112,7 +112,7 @@
                     </div>
                     <div class="card-body">
                         <div class="table-responsive">
-                            <table class="table custom-table">
+                            <table class="table custom-table" data-user-table-filter="pending">
                                 <thead class="thead-light">
                                     <tr>
                                         <th>ID</th>
@@ -131,7 +131,7 @@
                                         @if ($row->usertype !== 'admin') <!-- Exclude admins -->
                                         @if ($row->status === 'pending') 
                                         @if ($row->email_verified_at != NULL) 
-                                        <tr>
+                                        <tr data-user-id="{{ $row->id }}">
                                         <td>{{ $counter }}</td> <!-- Use manual counter -->
                                         <td>{{ $row->name }}</td>
                                         <td>{{ $row->email }}</td>

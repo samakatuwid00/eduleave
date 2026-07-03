@@ -1,13 +1,12 @@
-<a id="mobile_btn" class="mobile_btn float-left" href="#sidebar"><i class="fas fa-bars" aria-hidden="true"></i></a>
-<a id="toggle_btn" class="float-left" href="javascript:void(0);">
-<img src="assets/img/sidebar/icon-21.png" alt="">
-</a>
-<div class="sidebar" id="sidebar">
+<div class="sidebar" id="sidebar" aria-label="Admin navigation">
+    <button id="sidebar_close" class="sidebar-close" type="button" aria-label="Close navigation">
+        <i class="fas fa-times" aria-hidden="true"></i>
+    </button>
     <div class="sidebar-inner slimscroll">
         <div id="sidebar-menu" class="sidebar-menu">
             <div class="header-left">
                 <a href="{{ url('admin/dashboard') }}" class="logo">
-                    <span class="text-uppercase">EDU LEAVE</span>
+                    <span class="text-uppercase">EDULEAVE</span>
                     <img src="{{ asset('assets/images/icons8-leave-48.png') }}" width="40" height="40" alt="">
                 </a>
             </div>

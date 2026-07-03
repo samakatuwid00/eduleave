@@ -8,6 +8,12 @@
     <!-- Include Alertify CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/alertifyjs@1.13.1/build/css/alertify.min.css"/>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/alertifyjs@1.13.1/build/css/themes/default.min.css"/>
+    <style>
+        #resend-verification-button:disabled {
+            cursor: not-allowed;
+            opacity: 0.65;
+        }
+    </style>
 </head>
 <body>
     @include('auth.login_css')
@@ -24,10 +30,14 @@
         </p>
 
         <!-- Buttons -->
-        <form method="POST" action="{{ route('verification.send') }}" style="margin-bottom: 10px;">
+        <form id="resend-verification-form" method="POST" action="{{ route('verification.send') }}" style="margin-bottom: 10px;">
             @csrf
             <div class="input-box button">
-                <input type="submit" value="{{ __('Resend Verification Email') }}">
+                <input
+                    id="resend-verification-button"
+                    type="submit"
+                    value="{{ ($cooldownSeconds ?? 0) > 0 ? __('Resend Verification Email (:seconds s)', ['seconds' => $cooldownSeconds]) : __('Resend Verification Email') }}"
+                    @disabled(($cooldownSeconds ?? 0) > 0)>
             </div>
         </form>
 
@@ -47,11 +57,45 @@
         alertify.set('notifier', 'position', 'top-right');
 
         // Display alert based on session message
-        @if (session('message'))
-            alertify.success("{{ session('message') }}");
+        @if (session('status') === 'verification-link-sent')
+            alertify.success("{{ __('A new verification link has been sent to your email address.') }}");
         @elseif (session('errors'))
             alertify.error("An error occurred while sending the verification email. Please try again.");
         @endif
+
+        const resendForm = document.getElementById('resend-verification-form');
+        const resendButton = document.getElementById('resend-verification-button');
+        const resendLabel = @json(__('Resend Verification Email'));
+        let cooldownSeconds = Number(@json($cooldownSeconds ?? 0));
+
+        const updateResendButton = () => {
+            if (cooldownSeconds > 0) {
+                resendButton.disabled = true;
+                resendButton.value = `${resendLabel} (${cooldownSeconds}s)`;
+                return;
+            }
+
+            resendButton.disabled = false;
+            resendButton.value = resendLabel;
+        };
+
+        updateResendButton();
+
+        if (cooldownSeconds > 0) {
+            const countdown = window.setInterval(() => {
+                cooldownSeconds--;
+                updateResendButton();
+
+                if (cooldownSeconds <= 0) {
+                    window.clearInterval(countdown);
+                }
+            }, 1000);
+        }
+
+        resendForm.addEventListener('submit', () => {
+            resendButton.disabled = true;
+            resendButton.value = @json(__('Sending...'));
+        });
     </script>
 </body>
 </html>

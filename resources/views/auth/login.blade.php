@@ -56,7 +56,7 @@
                     <input 
                         type="email" 
                         name="email" 
-                        placeholder="Enter your email" 
+                        placeholder="example@gmail.com"
                         value="{{ old('email') }}" 
                         required 
                         autofocus 
@@ -68,7 +68,7 @@
                         type="password" 
                         id="password" 
                         name="password" 
-                        placeholder="Enter your password" 
+                        placeholder="Example: SecurePass1!"
                         value="{{ old('password') }}" 
                         required 
                         autofocus 

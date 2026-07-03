@@ -23,7 +23,8 @@
       </div>
       <div class="row">
         <div class="col-md-12">
-          <table id="userTable" class="display">
+          <div class="dashboard-table-shell">
+          <table id="userTable" class="display" data-user-table-filter="all">
             <thead>
               <tr>
                 <th>ID</th>
@@ -42,7 +43,7 @@
               @foreach ($users as $row)
                 @if ($row->usertype !== 'admin') <!-- Exclude admins -->
                 @if ($row->email_verified_at != NULL) 
-                <tr>
+                <tr data-user-id="{{ $row->id }}">
                   <td>{{ $counter }}</td> <!-- Use manual counter -->
                   <td>{{ $row->name }}</td>
                   <td>{{ $row->email }}</td>
@@ -70,6 +71,7 @@
               @endforeach
             </tbody>
           </table>
+          </div>
         </div>
       </div>
     </div>

@@ -5,9 +5,10 @@
 
     <div class="video-overlay header-text">
         <div class="caption">
-            <h6>Teachers Leave Card System</h6>
-            <h2><em>Time Off</em> Hassle Free</h2>
-            <div class="main-button">
+            
+            <h2 class ="mb-2"><em>Time Off</em> Hassle Free</h2>
+            <h6 class ="mb-4">For Teaching and Non Teaching Leave Card Monitoring</h6>
+            <div class="main-button mt-4">
                 <div class="scroll-to-section">
                 @if (auth()->check() && auth()->user()->usertype == 'admin')
                     <a href="{{ route('admin.dashboard') }}">Dashboard</a>

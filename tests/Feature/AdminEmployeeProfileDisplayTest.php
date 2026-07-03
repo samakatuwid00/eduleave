@@ -91,6 +91,63 @@ test('admin details modal receives normalized employee profile fields', function
         ]);
 });
 
+test('approved users are ordered by their latest approval update', function () {
+    $admin = User::factory()->create(['usertype' => 'admin']);
+
+    User::factory()->create([
+        'name' => 'Older Approved User',
+        'status' => 'active',
+        'updated_at' => now()->subDays(2),
+    ]);
+    User::factory()->create([
+        'name' => 'Newest Approved User',
+        'status' => 'active',
+        'updated_at' => now(),
+    ]);
+
+    $this->actingAs($admin)
+        ->get('/admin/users/view-approved_users')
+        ->assertOk()
+        ->assertSeeInOrder(['Newest Approved User', 'Older Approved User']);
+});
+
+test('all users and leave cards are ordered by their latest approval update', function () {
+    $admin = User::factory()->create(['usertype' => 'admin']);
+
+    User::factory()->create([
+        'name' => 'Older Listed User',
+        'status' => 'active',
+        'updated_at' => now()->subDays(2),
+    ]);
+    User::factory()->create([
+        'name' => 'Newest Listed User',
+        'status' => 'active',
+        'updated_at' => now(),
+    ]);
+
+    $this->actingAs($admin)
+        ->get('/admin/users/view-all_users')
+        ->assertOk()
+        ->assertSeeInOrder(['Newest Listed User', 'Older Listed User']);
+
+    $this->get('/admin/teacher_leave_cards')
+        ->assertOk()
+        ->assertSeeInOrder(['Newest Listed User', 'Older Listed User']);
+});
+
+test('admin user pages expose responsive sidebar and dark mode controls', function () {
+    $admin = User::factory()->create(['usertype' => 'admin']);
+
+    $this->actingAs($admin)
+        ->get('/admin/users/view-pending_users')
+        ->assertOk()
+        ->assertSee('id="mobile_btn"', false)
+        ->assertSee('id="sidebar_close"', false)
+        ->assertSee('id="theme_toggle"', false)
+        ->assertSee('class="dashboard-table-shell"', false)
+        ->assertSee('Edu Leave. All rights reserved.');
+});
+
 test('admin can view a teaching leave card through the employee profile', function () {
     $admin = User::factory()->create(['usertype' => 'admin']);
     $personnelType = PersonnelType::query()->where('code', PersonnelType::CODE_TEACHING)->firstOrFail();

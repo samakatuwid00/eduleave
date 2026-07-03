@@ -48,7 +48,7 @@
                             <input
                                 type="text"
                                 name="name"
-                                placeholder="Enter your name"
+                                placeholder="Juan Dela Cruz"
                                 value="{{ old('name') }}"
                                 required>
                             @error('name')
@@ -62,7 +62,7 @@
                             <input
                                 type="text"
                                 name="position"
-                                placeholder="Enter position/status"
+                                placeholder="Teacher I"
                                 value="{{ old('position') }}"
                                 required>
                             @error('position')
@@ -115,7 +115,7 @@
                             <input
                                 type="text"
                                 name="place_of_birth"
-                                placeholder="Enter place of birth"
+                                placeholder="Naga City"
                                 value="{{ old('place_of_birth') }}"
                                 required>
                             @error('place_of_birth')
@@ -129,7 +129,7 @@
                             <input
                                 type="number"
                                 name="employee_number"
-                                placeholder="Enter employee number"
+                                placeholder="123456"
                                 value="{{ old('employee_number') }}"
                                 required>
                             @error('employee_number')
@@ -156,7 +156,7 @@
                             <input
                                 type="text"
                                 name="station"
-                                placeholder="Enter your station"
+                                placeholder="Naga Central School"
                                 value="{{ old('station') }}"
                                 required>
                             @error('station')
@@ -167,12 +167,14 @@
                         <!-- Civil Status -->
                         <div class="input-field">
                             <label>Civil Status</label>
-                            <input
-                                type="text"
-                                name="civil_status"
-                                placeholder="Enter civil status"
-                                value="{{ old('civil_status') }}"
-                                required>
+                            <select name="civil_status" required>
+                                <option value="" disabled @selected(! old('civil_status'))>Select Civil Status</option>
+                                <option value="Single" @selected(old('civil_status') === 'Single')>Single</option>
+                                <option value="Married" @selected(old('civil_status') === 'Married')>Married</option>
+                                <option value="Widowed" @selected(old('civil_status') === 'Widowed')>Widowed</option>
+                                <option value="Separated" @selected(old('civil_status') === 'Separated')>Separated</option>
+                                <option value="Annulled" @selected(old('civil_status') === 'Annulled')>Annulled</option>
+                            </select>
                             @error('civil_status')
                             <span class="error">{{ $message }}</span>
                             @enderror
@@ -184,7 +186,7 @@
                             <input
                                 type="email"
                                 name="email"
-                                placeholder="Enter your email"
+                                placeholder="example@gmail.com"
                                 value="{{ old('email') }}"
                                 required>
                             @error('email')
@@ -198,7 +200,7 @@
                             <input
                                 type="number"
                                 name="phone"
-                                placeholder="Enter mobile number"
+                                placeholder="09171234567"
                                 value="{{ old('phone') }}"
                                 required>
                             @error('phone')
@@ -206,18 +208,33 @@
                             @enderror
                         </div>
 
-                        <!-- Password -->
-                        <div class="input-field">
-                            <label>Password</label>
-                            <input
-                                type="password"
-                                name="password"
-                                placeholder="Enter your password"
-                                required>
-                            @error('password')
-                            <span class="error">{{ $message }}</span>
-                            @enderror
-                        </div>
+<!-- Password -->
+<div class="input-field password-field">
+    <label>Password</label>
+    <input
+        type="password"
+        name="password"
+        placeholder="Example: SecurePass1!"
+        aria-describedby="password-requirements"
+        required>
+        
+    <!-- Password hint: kept small and in normal document flow so it never overlaps the error message -->
+    <small id="password-requirements" class="password-hint" style="
+        display: block;
+        position: static;
+        color: #6c757d;
+        font-size: 11px;
+        line-height: 1.3;
+        margin-top: 4px;
+    ">
+        <i class="fas fa-info-circle" style="margin-right: 3px;"></i>
+        8+ chars, upper &amp; lowercase, a number, and a symbol.
+    </small>
+
+    @error('password')
+    <span class="error" style="display: block; margin-top: 4px;">{{ $message }}</span>
+    @enderror
+</div>
 
                         <!-- Confirm Password -->
                         <div class="input-field" style="position: relative;">
@@ -226,7 +243,7 @@
                                 type="password"
                                 id="conPassword"
                                 name="password_confirmation"
-                                placeholder="Confirm your password"
+                                placeholder="Re-enter your secure password"
                                 required>
                             <i
                                 id="togglePassword"

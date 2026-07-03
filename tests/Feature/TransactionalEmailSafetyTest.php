@@ -69,6 +69,34 @@ test('verification resend is limited to one request per minute', function () {
     Notification::assertSentToTimes($user, QueuedVerifyEmail::class, 1);
 });
 
+test('registration email starts the verification resend cooldown', function () {
+    Notification::fake();
+    config()->set('services.turnstile.enabled', false);
+
+    $this->post('/register', [
+        'name' => 'Cooldown User',
+        'position' => 'Teacher I',
+        'date_employed' => '2025-01-01',
+        'sex' => 'Male',
+        'date_of_birth' => '1990-01-01',
+        'place_of_birth' => 'Naga City',
+        'employee_number' => 'COOLDOWN-001',
+        'personnel' => 'Teaching',
+        'station' => 'Test School',
+        'civil_status' => 'Single',
+        'email' => 'cooldown@example.com',
+        'phone' => '09123456789',
+        'password' => 'SecurePass1!',
+        'password_confirmation' => 'SecurePass1!',
+    ])->assertRedirect('/user/dashboard/warning');
+
+    $user = User::where('email', 'cooldown@example.com')->firstOrFail();
+
+    $this->post(route('verification.send'))->assertTooManyRequests();
+
+    Notification::assertSentToTimes($user, QueuedVerifyEmail::class, 1);
+});
+
 test('public email forms reject repeated requests', function () {
     Notification::fake();
 
@@ -108,8 +136,8 @@ test('registration rejects an invalid turnstile token when enabled', function ()
         'civil_status' => 'Single',
         'email' => 'blocked-bot@example.com',
         'phone' => '09123456789',
-        'password' => 'password',
-        'password_confirmation' => 'password',
+        'password' => 'SecurePass1!',
+        'password_confirmation' => 'SecurePass1!',
         'cf-turnstile-response' => 'invalid-token',
     ])->assertRedirect('/register')
         ->assertSessionHasErrors('cf-turnstile-response');

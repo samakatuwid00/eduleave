@@ -17,14 +17,15 @@
       <div class="page-header">
         <div class="row">
           <div class="col-sm-12">
-            <h3 class="page-title"><strong>Teachers Leave Cards</strong></h3>
+            <h3 class="page-title"><strong>Teaching & Non-Teaching Leave Cards</strong></h3>
           </div>
         </div>
       </div>
 
       <div class="row">
         <div class="col-md-12">
-          <table id="userTable" class="display">
+          <div class="dashboard-table-shell">
+          <table id="userTable" class="display" data-user-table-filter="leave-cards">
             <thead>
               <tr>
                 <th>ID</th>
@@ -42,7 +43,7 @@
               @foreach ($users as $row)
                 @if ($row->usertype !== 'admin') <!-- Exclude admins -->
                 @if ($row->status === 'active') 
-                <tr>
+                <tr data-user-id="{{ $row->id }}">
                   <td>{{ $counter }}</td> <!-- Use manual counter -->
                   <td>{{ $row->name }}</td>
                   <td>{{ $row->email }}</td>
@@ -66,6 +67,7 @@
               @endforeach
             </tbody>
           </table>
+          </div>
         </div>
       </div>
     </div>

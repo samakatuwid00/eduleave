@@ -5,8 +5,190 @@ $.ajaxSetup({
 });
 
 $(document).ready(function () {
-    // Initialize DataTable
-    $("#userTable").DataTable();
+    const userTable = $("#userTable").length
+        ? $("#userTable").DataTable({
+              order: [],
+              scrollX: true,
+          })
+        : null;
+
+    function adjustVisibleDataTables() {
+        if (!$.fn.DataTable) {
+            return;
+        }
+
+        $("table.dataTable").each(function () {
+            if (!$.fn.DataTable.isDataTable(this)) {
+                return;
+            }
+
+            const dataTable = $(this).DataTable();
+            dataTable.columns.adjust();
+
+            if (dataTable.responsive) {
+                dataTable.responsive.recalc();
+            }
+        });
+    }
+
+    let dataTableAdjustmentTimer;
+
+    function scheduleDataTableAdjustment(delay = 80) {
+        window.clearTimeout(dataTableAdjustmentTimer);
+        dataTableAdjustmentTimer = window.setTimeout(
+            adjustVisibleDataTables,
+            delay
+        );
+    }
+
+    function closeCollapsedSubmenus() {
+        const submenus = $("#sidebar-menu .submenu").removeClass(
+            "collapsed-submenu-open"
+        );
+
+        if ($("body").hasClass("mini-sidebar")) {
+            submenus
+                .children("a")
+                .removeClass("subdrop")
+                .attr("aria-expanded", "false");
+            submenus.children("ul").stop(true, true).hide();
+        }
+    }
+
+    function applyAdminTheme(theme) {
+        const isDark = theme === "dark";
+
+        document.documentElement.dataset.adminTheme = theme;
+        document.body.dataset.layoutMode = theme;
+        localStorage.setItem("admin-theme", theme);
+        $("#theme_toggle")
+            .attr("aria-pressed", isDark)
+            .attr("aria-label", isDark ? "Enable light mode" : "Enable dark mode")
+            .find("i")
+            .toggleClass("fa-moon", !isDark)
+            .toggleClass("fa-sun", isDark);
+    }
+
+    applyAdminTheme(document.documentElement.dataset.adminTheme || "light");
+
+    $(document).on("click", "#theme_toggle", function () {
+        const nextTheme =
+            document.documentElement.dataset.adminTheme === "dark"
+                ? "light"
+                : "dark";
+
+        applyAdminTheme(nextTheme);
+    });
+
+    function closeMobileSidebar() {
+        $(".main-wrapper").removeClass("slide-nav");
+        $(".sidebar-overlay").removeClass("opened");
+        $("html").removeClass("menu-opened");
+        $("#mobile_btn").attr("aria-expanded", "false");
+        closeCollapsedSubmenus();
+    }
+
+    $(document).on("click", "#mobile_btn", function () {
+        $(this).attr(
+            "aria-expanded",
+            $(".main-wrapper").hasClass("slide-nav") ? "true" : "false"
+        );
+    });
+
+    $(document).on("click", "#sidebar_close", closeMobileSidebar);
+
+    $(document).on("keydown", function (event) {
+        if (event.key === "Escape") {
+            closeMobileSidebar();
+            closeCollapsedSubmenus();
+        }
+    });
+
+    $(window).on("resize", function () {
+        if (window.innerWidth > 991) {
+            closeMobileSidebar();
+        }
+
+        scheduleDataTableAdjustment();
+    });
+
+    $(document).on("click", "#sidebar-menu a", function () {
+        if (window.innerWidth <= 991 && !$(this).parent().hasClass("submenu")) {
+            closeMobileSidebar();
+        }
+    });
+
+    $(document).on("click", "#sidebar-menu .submenu > a", function (event) {
+        if (window.innerWidth < 992 || !$("body").hasClass("mini-sidebar")) {
+            return;
+        }
+
+        event.preventDefault();
+
+        const link = $(this);
+        const submenu = link.parent();
+        const shouldOpen = link.hasClass("subdrop");
+
+        $("#sidebar-menu .submenu")
+            .not(submenu)
+            .removeClass("collapsed-submenu-open")
+            .children("a")
+            .attr("aria-expanded", "false");
+
+        submenu.toggleClass("collapsed-submenu-open", shouldOpen);
+        link.attr("aria-expanded", shouldOpen ? "true" : "false");
+
+        if (shouldOpen) {
+            const submenuList = submenu.children("ul");
+            const linkTop = link[0].getBoundingClientRect().top;
+            const maximumTop = window.innerHeight - submenuList.outerHeight() - 10;
+            const flyoutTop = Math.max(10, Math.min(linkTop, maximumTop));
+
+            submenuList.css("top", `${flyoutTop}px`);
+        }
+    });
+
+    $(document).on("click", function (event) {
+        if (!$(event.target).closest("#sidebar-menu .submenu").length) {
+            closeCollapsedSubmenus();
+        }
+    });
+
+    $(document).on("click", "#toggle_btn", function () {
+        const collapsed = $("body").hasClass("mini-sidebar");
+
+        $("body").removeClass("expand-menu");
+        closeCollapsedSubmenus();
+        $(this)
+            .attr("aria-expanded", !collapsed)
+            .attr("aria-label", collapsed ? "Expand navigation" : "Collapse navigation")
+            .find("i")
+            .toggleClass("fa-angle-left", !collapsed)
+            .toggleClass("fa-angle-right", collapsed);
+
+        if (collapsed) {
+            $("#sidebar-menu .submenu > ul").stop(true, true).hide();
+        } else {
+            $("#sidebar-menu .submenu").each(function () {
+                const submenu = $(this);
+                const hasActiveChild = submenu.find("li.active").length > 0;
+
+                submenu
+                    .children("a")
+                    .toggleClass("subdrop", hasActiveChild)
+                    .attr("aria-expanded", hasActiveChild);
+                submenu.children("ul").toggle(hasActiveChild);
+            });
+        }
+
+        scheduleDataTableAdjustment(420);
+    });
+
+    $(".sidebar, .page-wrapper").on("transitionend", function (event) {
+        if (["width", "margin-left", "left"].includes(event.originalEvent.propertyName)) {
+            adjustVisibleDataTables();
+        }
+    });
 
     // Fetch the user name from the HTML element
     var userName = $("#tableContainer").data("user-name"); // Correct target for data-user-name
@@ -142,202 +324,81 @@ $(document).ready(function () {
         });
     });
 
-    // Handle Approve Button in Modal
-    $(document).on("click", "#modalApproveBtn", function () {
-        const userId = $(this).data("id");
+    function refreshUserTableRow(userId, status) {
+        const row = $('[data-user-id="' + userId + '"]');
+
+        if (!row.length) {
+            return;
+        }
+
+        const sourceTable = row.closest("table");
+        const filter = sourceTable.data("user-table-filter");
+        const shouldRemove = filter === "pending" || (filter && filter !== "all" && filter !== status);
+
+        if (shouldRemove) {
+            if ($.fn.DataTable.isDataTable(sourceTable[0])) {
+                sourceTable.DataTable().row(row).remove().draw(false);
+            } else {
+                row.remove();
+            }
+
+            return;
+        }
+
+        row.find(".status-pending, .status-approved, .status-rejected")
+            .removeClass("status-pending status-approved status-rejected")
+            .addClass(status === "active" ? "status-approved" : "status-" + status)
+            .text(status === "active" ? "Active" : status.charAt(0).toUpperCase() + status.slice(1));
+
+        if ($.fn.DataTable.isDataTable(sourceTable[0])) {
+            sourceTable.DataTable().row(row).invalidate("dom").draw(false);
+        }
+    }
+
+    function changeUserStatus(userId, status) {
+        const approving = status === "active";
+        const action = approving ? "approve" : "reject";
+        const pastTense = approving ? "Approved" : "Rejected";
 
         Swal.fire({
             title: "Are you sure?",
-            text: "You want to approve this user!",
+            text: "You want to " + action + " this user!",
             icon: "warning",
             showCancelButton: true,
             confirmButtonColor: "#3085d6",
             cancelButtonColor: "#d33",
-            confirmButtonText: "Yes, approve it!",
+            confirmButtonText: "Yes, " + action + " it!",
         }).then((result) => {
-            if (result.isConfirmed) {
-                $.ajax({
-                    url: "/admin/users/approve/" + userId,
-                    method: "POST",
-                    headers: {
-                        "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr(
-                            "content"
-                        ),
-                    },
-                    success: function (response) {
-                        Swal.fire(
-                            "Approved!",
-                            response.message,
-                            "success"
-                        ).then(() => {
-                            $("#moreInfoModal").modal("hide"); // Hide modal
-                            location.reload(); // Reload the page
-                            localStorage.setItem(
-                                "alertMessage",
-                                "User approved successfully!"
-                            );
-                        });
-                    },
-                    error: function (xhr) {
-                        console.error("Error:", xhr);
-                        Swal.fire(
-                            "Error!",
-                            "Failed to approve user. Please try again.",
-                            "error"
-                        );
-                    },
-                });
+            if (!result.isConfirmed) {
+                return;
             }
+
+            $.ajax({
+                url: "/admin/users/" + action + "/" + userId,
+                method: "POST",
+                success: function (response) {
+                    $("#moreInfoModal").modal("hide");
+                    refreshUserTableRow(userId, response.status || status);
+                    Swal.fire(pastTense + "!", response.message, "success");
+                },
+                error: function (xhr) {
+                    console.error("Error:", xhr);
+                    Swal.fire(
+                        "Error!",
+                        "Failed to " + action + " user. Please try again.",
+                        "error"
+                    );
+                },
+            });
         });
+    }
+
+    $(document).on("click", "#modalApproveBtn, .modal-approve-btn", function () {
+        changeUserStatus($(this).data("id"), "active");
     });
 
-    // Handle Reject Button in Modal
-    $(document).on("click", "#modalRejectBtn", function () {
-        const userId = $(this).data("id");
-
-        Swal.fire({
-            title: "Are you sure?",
-            text: "You want to reject this user!",
-            icon: "warning",
-            showCancelButton: true,
-            confirmButtonColor: "#3085d6",
-            cancelButtonColor: "#d33",
-            confirmButtonText: "Yes, reject it!",
-        }).then((result) => {
-            if (result.isConfirmed) {
-                $.ajax({
-                    url: "/admin/users/reject/" + userId,
-                    method: "POST",
-                    headers: {
-                        "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr(
-                            "content"
-                        ),
-                    },
-                    success: function (response) {
-                        Swal.fire(
-                            "Rejected!",
-                            response.message,
-                            "success"
-                        ).then(() => {
-                            $("#moreInfoModal").modal("hide"); // Hide modal
-                            location.reload(); // Reload the page
-                            localStorage.setItem(
-                                "alertMessage",
-                                "User rejected successfully!"
-                            );
-                        });
-                    },
-                    error: function (xhr) {
-                        console.error("Error:", xhr);
-                        Swal.fire(
-                            "Error!",
-                            "Failed to approve user. Please try again.",
-                            "error"
-                        );
-                    },
-                });
-            }
-        });
-    });
-
-    // Handle Approve Button in Modal
-    $(document).on("click", ".modal-approve-btn", function () {
-        const userId = $(this).data("id");
-        console.log("Approving User ID:", userId);
-
-        Swal.fire({
-            title: "Are you sure?",
-            text: "You want to approve this user!",
-            icon: "warning",
-            showCancelButton: true,
-            confirmButtonColor: "#3085d6",
-            cancelButtonColor: "#d33",
-            confirmButtonText: "Yes, approve it!",
-        }).then((result) => {
-            if (result.isConfirmed) {
-                $.ajax({
-                    url: "/admin/users/approve/" + userId,
-                    method: "POST",
-                    headers: {
-                        "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr(
-                            "content"
-                        ),
-                    },
-                    success: function (response) {
-                        Swal.fire(
-                            "Approved!",
-                            response.message,
-                            "success"
-                        ).then(() => {
-                            $("#moreInfoModal").modal("hide"); // Hide modal
-                            location.reload(); // Reload the page
-                            localStorage.setItem(
-                                "alertMessage",
-                                "User approved successfully!"
-                            );
-                        });
-                    },
-                    error: function (xhr) {
-                        console.error("Error:", xhr);
-                        Swal.fire(
-                            "Error!",
-                            "Failed to approve user. Please try again.",
-                            "error"
-                        );
-                    },
-                });
-            }
-        });
-    });
-
-    // Handle Reject Button in Modal
-    $(document).on("click", ".modal-reject-btn", function () {
-        const userId = $(this).data("id");
-        console.log("Rejecting User ID:", userId);
-
-        Swal.fire({
-            title: "Are you sure?",
-            text: "You want to reject this user!",
-            icon: "warning",
-            showCancelButton: true,
-            confirmButtonColor: "#3085d6",
-            cancelButtonColor: "#d33",
-            confirmButtonText: "Yes, reject it!",
-        }).then((result) => {
-            if (result.isConfirmed) {
-                $.ajax({
-                    url: "/admin/users/reject/" + userId,
-                    method: "POST",
-                    headers: {
-                        "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr(
-                            "content"
-                        ),
-                    },
-                    success: function (response) {
-                        Swal.fire(
-                            "Rejected!",
-                            response.message,
-                            "success"
-                        ).then(() => {
-                            $("#moreInfoModal").modal("hide"); // Hide modal
-                            location.reload(); // Reload the page
-                            localStorage.setItem(
-                                "alertMessage",
-                                "User rejected successfully!"
-                            );
-                        });
-                    },
-                    error: function (xhr) {
-                        console.error("Error:", xhr);
-                        Swal.fire(
-                            "Error!",
-                            "Failed to approve user. Please try again.",
-                            "error"
-                        );
-                    },
-                });
-            }
-        });
+    $(document).on("click", "#modalRejectBtn, .modal-reject-btn", function () {
+        changeUserStatus($(this).data("id"), "rejected");
     });
 
     $(document).ready(function () {
@@ -583,13 +644,13 @@ $(document).ready(function () {
         document.getElementById("prevBtn").style.display =
             step === 1 ? "none" : "inline-block";
     }
-    document.getElementById("nextBtn").addEventListener("click", function () {
+    document.getElementById("nextBtn")?.addEventListener("click", function () {
         if (currentStep < 2) {
             currentStep++;
             showStep(currentStep);
         }
     });
-    document.getElementById("prevBtn").addEventListener("click", function () {
+    document.getElementById("prevBtn")?.addEventListener("click", function () {
         if (currentStep > 1) {
             currentStep--;
             showStep(currentStep);
@@ -599,7 +660,7 @@ $(document).ready(function () {
     // Add button click event to mark step 2 as completed
     document
         .getElementById("modalAddBtn")
-        .addEventListener("click", function () {
+        ?.addEventListener("click", function () {
             // Mark Step 2 as completed when Add button is clicked
             const stepItems = document.querySelectorAll(".stepper-item");
             stepItems.forEach((item, index) => {
@@ -612,7 +673,9 @@ $(document).ready(function () {
         });
 
     // Initially show the first step
-    showStep(currentStep);
+    if (document.getElementById("step1")) {
+        showStep(currentStep);
+    }
 
     $(document).on("click", "#modalAddBtn", function () {
         // Collect form data and user_id
@@ -712,7 +775,7 @@ const tableContainer = document.getElementById("tableContainer");
 const toggleFullscreenBtn = document.getElementById("toggleFullscreenBtn");
 const table = document.getElementById("newTable"); // The table element
 
-toggleFullscreenBtn.addEventListener("click", function () {
+toggleFullscreenBtn?.addEventListener("click", function () {
     if (!tableContainer.classList.contains("fullscreen")) {
         tableContainer.classList.add("fullscreen");
         $("#newTable").DataTable().columns.adjust().draw(false); // Ensure refresh

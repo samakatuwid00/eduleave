@@ -12,6 +12,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules;
 use Illuminate\Validation\ValidationException;
@@ -45,10 +46,10 @@ class RegisteredUserController extends Controller
             'employee_number' => ['required', 'string', 'unique:employee_profiles,employee_number', 'max:255'],
             'personnel' => ['required', 'in:Teaching,Non-Teaching'],
             'station' => ['required', 'string', 'max:255'],
-            'civil_status' => ['required', 'string', 'max:255'],
+            'civil_status' => ['required', Rule::in(['Single', 'Married', 'Widowed', 'Separated', 'Annulled'])],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
             'phone' => ['required', 'string', 'max:15'],
-            'password' => ['required', 'confirmed', Rules\Password::defaults()],
+            'password' => ['required', 'confirmed', Rules\Password::min(8)->mixedCase()->numbers()->symbols()],
             'cf-turnstile-response' => [
                 Rule::requiredIf(config('services.turnstile.enabled')),
                 new Turnstile,
@@ -84,6 +85,7 @@ class RegisteredUserController extends Controller
 
         // Trigger the Registered event
         event(new Registered($user));
+        RateLimiter::hit($user->verificationEmailCooldownKey(), 60);
 
         // Log in the user
         Auth::login($user);

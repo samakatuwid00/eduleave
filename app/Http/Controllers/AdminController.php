@@ -16,7 +16,10 @@ class AdminController extends Controller
 {
     public function all_users()
     {
-        $users = User::with('employeeProfile.personnelType')->get();
+        $users = User::with('employeeProfile.personnelType')
+            ->orderByDesc('updated_at')
+            ->orderByDesc('id')
+            ->get();
 
         return view('admin.sidebar.all_users')->with('users', $users);
     }
@@ -30,7 +33,13 @@ class AdminController extends Controller
 
     public function approved_users()
     {
-        $users = User::with('employeeProfile.personnelType')->get();
+        $users = User::with('employeeProfile.personnelType')
+            ->where('usertype', '!=', 'admin')
+            ->where('status', 'active')
+            ->whereNotNull('email_verified_at')
+            ->orderByDesc('updated_at')
+            ->orderByDesc('id')
+            ->get();
 
         return view('admin.sidebar.approved_users')->with('users', $users);
     }
@@ -93,11 +102,14 @@ class AdminController extends Controller
             return true;
         });
 
+        $user->refresh();
+
         return response()->json([
             'message' => $notificationQueued
                 ? 'User approved successfully!'
                 : 'User status was already decided.',
             'notification_queued' => $notificationQueued,
+            'status' => $user->status,
         ]);
     }
 
@@ -125,17 +137,23 @@ class AdminController extends Controller
             return true;
         });
 
+        $user->refresh();
+
         return response()->json([
             'message' => $notificationQueued
                 ? 'User rejected successfully!'
                 : 'User status was already decided.',
             'notification_queued' => $notificationQueued,
+            'status' => $user->status,
         ]);
     }
 
     public function leave_cards()
     {
-        $users = User::with('employeeProfile.personnelType')->get();
+        $users = User::with('employeeProfile.personnelType')
+            ->orderByDesc('updated_at')
+            ->orderByDesc('id')
+            ->get();
 
         return view('admin.sidebar.leave_cards')->with('users', $users);
     }

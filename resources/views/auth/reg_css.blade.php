@@ -142,7 +142,7 @@
         color: #333;
         border-radius: 5px;
         border: 1px solid #aaa;
-        padding: 0 15px;
+        padding: 0 12px;
         height: 42px;
         margin: 8px 0;
         box-sizing: border-box; /* Ensures padding and border are included in the height */
@@ -157,6 +157,70 @@
         font-size: 12px;
         font-weight: 500;
         color: #2e2e2e;
+    }
+
+    .password-hint {
+        align-items: flex-start;
+        background-color: rgba(0, 123, 255, 0.08);
+        border-left: 3px solid #007BFF;
+        border-radius: 3px;
+        color: #444;
+        display: flex;
+        font-size: 11.5px;
+        gap: 5px;
+        line-height: 1.4;
+        margin-top: 1px;
+        padding: 6px 8px;
+    }
+
+    .password-hint i {
+        color: #007BFF;
+        flex-shrink: 0;
+        margin-top: 1px;
+    }
+
+    .password-fields-row {
+        align-items: start;
+        column-gap: 22px;
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        width: 100%;
+    }
+
+    .password-fields-row .input-field {
+        width: 100%;
+    }
+
+    .password-input-wrap {
+        position: relative;
+    }
+
+    .password-input-wrap input {
+        padding-right: 38px;
+        width: 100%;
+    }
+
+    .password-toggle {
+        align-items: center;
+        background: transparent;
+        border: 0;
+        color: #6c757d;
+        cursor: pointer;
+        display: flex;
+        height: 42px;
+        justify-content: center;
+        margin: 8px 0;
+        padding: 0;
+        position: absolute;
+        right: 2px;
+        top: 0;
+        width: 36px;
+    }
+
+    .password-field .error {
+        position: static;
+        margin-top: 4px;
+        text-align: left;
     }
 
     .input-field select,
@@ -191,6 +255,20 @@
     form button:hover{
         background-color: #265df2;
     }
+    .container form button.password-toggle,
+    .container form button.password-toggle:hover {
+        background: transparent;
+        border: 0;
+        color: #6c757d;
+        height: 42px;
+        margin: 8px 0;
+        max-width: 36px;
+        padding: 0;
+        position: absolute;
+        right: 2px;
+        top: 0;
+        width: 36px;
+    }
     form button i,
     form .backBtn i{
         margin: 0 6px;
@@ -218,6 +296,9 @@
         }
         form .fields .input-field{
             width: 100%;
+        }
+        .password-fields-row {
+            grid-template-columns: 1fr;
         }
     }
 </style>

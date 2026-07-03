@@ -1,3 +1,7 @@
+<footer class="application-footer">
+  <p>&copy; {{ now()->year }} EduLeave. All rights reserved.</p>
+</footer>
+
 <!-- Scripts -->
 <script src="{{ asset('/admincss/assets/js/jquery-3.6.0.min.js') }}"></script>
 <script src="{{ asset('/admincss/assets/js/bootstrap.bundle.min.js') }}"></script>

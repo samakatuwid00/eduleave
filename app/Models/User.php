@@ -59,6 +59,11 @@ class User extends Authenticatable implements MustVerifyEmail
         $this->notify(new QueuedVerifyEmail);
     }
 
+    public function verificationEmailCooldownKey(): string
+    {
+        return 'verification-email:user:'.$this->getAuthIdentifier();
+    }
+
     public function sendPasswordResetNotification($token): void
     {
         $this->notify(new QueuedResetPassword($token));

@@ -4,6 +4,7 @@ use App\Models\User;
 use Illuminate\Auth\Events\Verified;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\URL;
 
 test('email verification screen can be rendered', function () {
@@ -12,6 +13,18 @@ test('email verification screen can be rendered', function () {
     $response = $this->actingAs($user)->get('/verify-email');
 
     $response->assertStatus(200);
+});
+
+test('email verification screen shows the resend cooldown', function () {
+    $user = User::factory()->unverified()->create();
+    RateLimiter::hit($user->verificationEmailCooldownKey(), 60);
+
+    $this->actingAs($user)
+        ->get('/verify-email')
+        ->assertOk()
+        ->assertViewHas('cooldownSeconds', fn ($seconds) => $seconds > 0)
+        ->assertSee('id="resend-verification-button"', false)
+        ->assertSee('disabled', false);
 });
 
 test('email can be verified', function () {

@@ -27,7 +27,7 @@
       <div class="content container-fluid">
         <div class="page-header">
           <div class="row">
-            <div class="col-sm-12 d-flex justify-content-between align-items-center">
+            <div class="col-sm-12 d-flex justify-content-between align-items-center leave-card-page-header">
               <div>
                 <h3 class="page-title" style="font-size: small">{{ $profile->personnelType->name }} Leave Card</h3>
                 <h5 class="page-title">
@@ -43,7 +43,7 @@
                   </button>
                 </h5>
               </div>
-              <div class="d-flex justify-content-end align-items-center my-3">
+              <div class="d-flex justify-content-end align-items-center my-3 leave-card-toolbar">
                 <!-- Back Button -->
                 <a href="{{ url('admin/teacher_leave_cards') }}" class="btn btn-info me-2">
                   <i class="fa fa-arrow-left"></i> Back
