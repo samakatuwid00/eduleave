@@ -8,6 +8,7 @@
         "php": "^8.2",
         "laravel/framework": "^12.61.1",
         "laravel/tinker": "^2.9",
+        "resend/resend-php": "^1.4",
         "shuchkin/simplexlsx": "^1.1",
         "shuchkin/simplexlsxgen": "^1.4"
     },
