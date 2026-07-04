@@ -15,6 +15,7 @@
 <script src="{{ asset('/admincss/assets/js/apexcharts.js') }}"></script>
 <script src="{{ asset('/admincss/assets/js/chart-data.js') }}"></script>
 <script src="{{ asset('/admincss/assets/js/app.js') }}"></script>
+<script src="{{ asset('/admincss/assets/js/admin-shell.js') }}"></script>
 <script src="{{ asset('/admincss/assets/js/custom.js') }}"></script>
 
 <!-- datatables -->

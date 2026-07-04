@@ -5,7 +5,8 @@ $.ajaxSetup({
 });
 
 $(document).ready(function () {
-    const userTable = $("#userTable").length
+    const userTable =
+        $("#userTable").length && $.fn.DataTable
         ? $("#userTable").DataTable({
               order: [],
               scrollX: true,
@@ -54,31 +55,6 @@ $(document).ready(function () {
             submenus.children("ul").stop(true, true).hide();
         }
     }
-
-    function applyAdminTheme(theme) {
-        const isDark = theme === "dark";
-
-        document.documentElement.dataset.adminTheme = theme;
-        document.body.dataset.layoutMode = theme;
-        localStorage.setItem("admin-theme", theme);
-        $("#theme_toggle")
-            .attr("aria-pressed", isDark)
-            .attr("aria-label", isDark ? "Enable light mode" : "Enable dark mode")
-            .find("i")
-            .toggleClass("fa-moon", !isDark)
-            .toggleClass("fa-sun", isDark);
-    }
-
-    applyAdminTheme(document.documentElement.dataset.adminTheme || "light");
-
-    $(document).on("click", "#theme_toggle", function () {
-        const nextTheme =
-            document.documentElement.dataset.adminTheme === "dark"
-                ? "light"
-                : "dark";
-
-        applyAdminTheme(nextTheme);
-    });
 
     function closeMobileSidebar() {
         $(".main-wrapper").removeClass("slide-nav");
@@ -159,12 +135,6 @@ $(document).ready(function () {
 
         $("body").removeClass("expand-menu");
         closeCollapsedSubmenus();
-        $(this)
-            .attr("aria-expanded", !collapsed)
-            .attr("aria-label", collapsed ? "Expand navigation" : "Collapse navigation")
-            .find("i")
-            .toggleClass("fa-angle-left", !collapsed)
-            .toggleClass("fa-angle-right", collapsed);
 
         if (collapsed) {
             $("#sidebar-menu .submenu > ul").stop(true, true).hide();
