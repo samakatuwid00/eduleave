@@ -1,6 +1,0 @@
-INSERT INTO `card_info` (`nature_of_activity`, `no_of_days_credited`, `dso_no_vsr`, `inclusive_dates`, `no_days_leave`, `service_cred_bal`, `leave_without_pay`, `nature_of_leave`, `dso_no_rol`, `remarks`) VALUES ('Brigada Eskwela 2017', '2.5', '155, s. 18', '', '', '39', '', '', '', '');
-INSERT INTO `card_info` (`nature_of_activity`, `no_of_days_credited`, `dso_no_vsr`, `inclusive_dates`, `no_days_leave`, `service_cred_bal`, `leave_without_pay`, `nature_of_leave`, `dso_no_rol`, `remarks`) VALUES ('Emergency Brigada', '0.5', '157, s. 18', '', '', '39.5', '', '', '', '');
-
-inclusive_period, nature_of_activity, no_of_days_credited, dso_no_vsr, inclusive_dates, no_days_leave, service_cred_bal, leave_without_pay, nature_of_leave, dso_no_rol, remarks
-
-inclusive_period, nature_of_activity, no_of_days_credited, dso_no_vsr, inclusive_dates, no_days_leave, service_cred_bal, leave_without_pay, nature_of_leave, dso_no_rol, remarks, emp_num
