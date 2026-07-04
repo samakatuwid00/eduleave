@@ -5,7 +5,6 @@
     <a href="#menu" class="menu-link"><i class="fa fa-bars"></i></a>
     <nav id="menu" class="main-nav" role="navigation">
         <ul class="main-menu">
-            <li><a href="">Home</a></li>
             <li class="has-submenu">
                 <a href="#">About Us</a>
                 <ul class="sub-menu">
