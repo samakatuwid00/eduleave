@@ -382,6 +382,44 @@
     color: #e5e7eb;
   }
 
+  button.dt-button,
+  div.dt-button,
+  a.dt-button,
+  input.dt-button {
+    background: #f8f9fa !important;
+    border-color: #cbd5e1 !important;
+    color: #1f2937 !important;
+  }
+  button.dt-button:hover,
+  button.dt-button:focus,
+  button.dt-button:active,
+  a.dt-button:hover,
+  a.dt-button:focus,
+  a.dt-button:active {
+    background: #e2e8f0 !important;
+    border-color: #94a3b8 !important;
+    color: #111827 !important;
+  }
+  html[data-admin-theme="dark"] button.dt-button,
+  html[data-admin-theme="dark"] div.dt-button,
+  html[data-admin-theme="dark"] a.dt-button,
+  html[data-admin-theme="dark"] input.dt-button {
+    background: #374151 !important;
+    border-color: #6b7280 !important;
+    box-shadow: none !important;
+    color: #f9fafb !important;
+  }
+  html[data-admin-theme="dark"] button.dt-button:hover,
+  html[data-admin-theme="dark"] button.dt-button:focus,
+  html[data-admin-theme="dark"] button.dt-button:active,
+  html[data-admin-theme="dark"] a.dt-button:hover,
+  html[data-admin-theme="dark"] a.dt-button:focus,
+  html[data-admin-theme="dark"] a.dt-button:active {
+    background: #4b5563 !important;
+    border-color: #9ca3af !important;
+    color: #ffffff !important;
+  }
+
   @media (min-width: 992px) {
     body.mini-sidebar.expand-menu .sidebar {
       width: 90px;

@@ -61,6 +61,28 @@
         }
     }
 
+    function closeMobileSidebar() {
+        document.querySelector(".main-wrapper")?.classList.remove("slide-nav");
+        document.querySelector(".sidebar-overlay")?.classList.remove("opened");
+        document.documentElement.classList.remove("menu-opened");
+        document.getElementById("mobile_btn")?.setAttribute(
+            "aria-expanded",
+            "false"
+        );
+    }
+
+    function syncMobileSidebarToggle() {
+        const mobileToggle = document.getElementById("mobile_btn");
+        const wrapper = document.querySelector(".main-wrapper");
+
+        if (mobileToggle && wrapper) {
+            mobileToggle.setAttribute(
+                "aria-expanded",
+                String(wrapper.classList.contains("slide-nav"))
+            );
+        }
+    }
+
     function initializeAdminShell() {
         applyAdminTheme(
             document.documentElement.dataset.adminTheme || "light"
@@ -84,6 +106,14 @@
                 // reflects that resulting state in the icon and button text.
                 syncSidebarToggle();
             }
+
+            if (clickedElement?.id === "mobile_btn") {
+                syncMobileSidebarToggle();
+            }
+
+            if (clickedElement?.id === "sidebar_close") {
+                closeMobileSidebar();
+            }
         });
 
         const sidebarStateObserver = new MutationObserver(syncSidebarToggle);
@@ -91,6 +121,17 @@
             attributes: true,
             attributeFilter: ["class"],
         });
+
+        const wrapper = document.querySelector(".main-wrapper");
+        if (wrapper) {
+            const mobileSidebarObserver = new MutationObserver(
+                syncMobileSidebarToggle
+            );
+            mobileSidebarObserver.observe(wrapper, {
+                attributes: true,
+                attributeFilter: ["class"],
+            });
+        }
     }
 
     if (document.readyState === "loading") {

@@ -17,7 +17,12 @@ test('verified pending user warning loads the normalized employee profile withou
     $this->actingAs($user)
         ->get('/user/dashboard/warning')
         ->assertOk()
-        ->assertSee('EMP-PENDING-WARNING');
+        ->assertSee('EMP-PENDING-WARNING')
+        ->assertSee('id="toggle_btn"', false)
+        ->assertSee('id="mobile_btn"', false)
+        ->assertSee('id="sidebar_close"', false)
+        ->assertSee('id="theme_toggle"', false)
+        ->assertSee('admin-shell.js', false);
 });
 
 test('active teaching user dashboard reads the teaching leave card table', function () {
@@ -46,7 +51,14 @@ test('active teaching user dashboard reads the teaching leave card table', funct
         ->assertOk()
         ->assertSee('EMP-USER-TEACHING')
         ->assertSee('Summer training')
-        ->assertSee('USER-DSO-100');
+        ->assertSee('USER-DSO-100')
+        ->assertSee('id="toggle_btn"', false)
+        ->assertSee('id="mobile_btn"', false)
+        ->assertSee('id="sidebar_close"', false)
+        ->assertSee('id="theme_toggle"', false)
+        ->assertSee('admin-shell.js', false)
+        ->assertSee('buttons.html5.min.js', false)
+        ->assertSee('buttons.print.min.js', false);
 });
 
 test('active non teaching user dashboard reads the non teaching leave card table', function () {

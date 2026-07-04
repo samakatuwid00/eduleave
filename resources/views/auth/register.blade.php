@@ -208,51 +208,43 @@
                             @enderror
                         </div>
 
-<!-- Password -->
-<div class="input-field password-field">
-    <label>Password</label>
-    <input
-        type="password"
-        name="password"
-        placeholder="Example: SecurePass1!"
-        aria-describedby="password-requirements"
-        required>
-        
-    <!-- Password hint: kept small and in normal document flow so it never overlaps the error message -->
-    <small id="password-requirements" class="password-hint" style="
-        display: block;
-        position: static;
-        color: #6c757d;
-        font-size: 11px;
-        line-height: 1.3;
-        margin-top: 4px;
-    ">
-        <i class="fas fa-info-circle" style="margin-right: 3px;"></i>
-        8+ chars, upper &amp; lowercase, a number, and a symbol.
-    </small>
-
-    @error('password')
-    <span class="error" style="display: block; margin-top: 4px;">{{ $message }}</span>
-    @enderror
-</div>
-
-                        <!-- Confirm Password -->
-                        <div class="input-field" style="position: relative;">
-                            <label>Confirm Password</label>
+                        <!-- Password -->
+                        <div class="input-field password-field">
+                            <label>Password</label>
                             <input
                                 type="password"
-                                id="conPassword"
-                                name="password_confirmation"
-                                placeholder="Re-enter your secure password"
+                                name="password"
+                                placeholder="Example: SecurePass1!"
+                                aria-describedby="password-requirements"
                                 required>
-                            <i
-                                id="togglePassword"
-                                class="fas fa-eye"
-                                style="position: absolute; top: 62%; right: 10px; transform: translateY(-50%); cursor: pointer;"></i>
-                            @error('password_confirmation')
-                            <span class="error">{{ $message }}</span>
+                            <small id="password-requirements" class="password-hint">
+                                <i class="fas fa-info-circle"></i>
+                                <span>Min. 8 chars: upper &amp; lower, number, symbol.</span>
+                            </small>
+                            @error('password')
+                            <span class="error password-error">{{ $message }}</span>
                             @enderror
                         </div>
+
+                        <!-- Confirm Password -->
+                        <div class="input-field password-field">
+                            <label>Confirm Password</label>
+                            <div class="password-input-wrap">
+                                <input
+                                    type="password"
+                                    id="conPassword"
+                                    name="password_confirmation"
+                                    placeholder="Re-enter your password"
+                                    required>
+                                <button type="button" id="togglePassword" class="password-toggle" aria-label="Show/hide password">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                            @error('password_confirmation')
+                            <span class="error password-error">{{ $message }}</span>
+                            @enderror
+                        </div>
+
                     </div>
 
                     <div class="text">
@@ -288,9 +280,10 @@
         const type = passwordField.getAttribute('type') === 'password' ? 'text' : 'password';
         passwordField.setAttribute('type', type);
 
-        // Toggle the icon class
-        this.classList.toggle('fa-eye');
-        this.classList.toggle('fa-eye-slash');
+        // Toggle the icon inside the button
+        const icon = this.querySelector('i');
+        icon.classList.toggle('fa-eye');
+        icon.classList.toggle('fa-eye-slash');
     });
 
     // Add event listener for form submission

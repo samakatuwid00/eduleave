@@ -2,6 +2,17 @@
 <title>Welcome To Edu Leave</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0">
 <meta name="csrf-token" content="{{ csrf_token() }}">
+<script>
+  (() => {
+    try {
+      const savedTheme = localStorage.getItem('admin-theme');
+      const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+      document.documentElement.dataset.adminTheme = savedTheme || (prefersDark ? 'dark' : 'light');
+    } catch (error) {
+      document.documentElement.dataset.adminTheme = 'light';
+    }
+  })();
+</script>
 <link rel="icon" href="{{ asset('assets/images/icons8-leave-48.png') }}" type="image/png">
 <link href="{{ asset('css?family=Roboto:300,400,500,700,900') }}" rel="stylesheet">
 <link rel="stylesheet" href="{{ asset('usercss/assets/css/bootstrap.min.css') }}">
@@ -144,5 +155,183 @@
   }
   #tableContainer {
     overflow-x: auto; /* Enable horizontal scroll for small screens */
+  }
+
+  .app-icon-button,
+  .sidebar-close {
+    align-items: center;
+    background: transparent;
+    border: 0;
+    color: #373d3f;
+    cursor: pointer;
+    display: inline-flex;
+    justify-content: center;
+  }
+  .app-icon-button {
+    height: 58px;
+    min-width: 48px;
+  }
+  .mobile_btn.app-icon-button {
+    display: none;
+  }
+  #toggle_btn.app-icon-button {
+    margin: 0 10px;
+  }
+  .theme-toggle {
+    font-size: 18px;
+  }
+  .sidebar-close {
+    display: none;
+    font-size: 20px;
+    height: 44px;
+    position: absolute;
+    right: 8px;
+    top: 8px;
+    width: 44px;
+    z-index: 3;
+  }
+
+  button.dt-button,
+  div.dt-button,
+  a.dt-button,
+  input.dt-button {
+    background: #f8f9fa !important;
+    border-color: #cbd5e1 !important;
+    color: #1f2937 !important;
+  }
+  button.dt-button:hover,
+  button.dt-button:focus,
+  button.dt-button:active,
+  a.dt-button:hover,
+  a.dt-button:focus,
+  a.dt-button:active {
+    background: #e2e8f0 !important;
+    border-color: #94a3b8 !important;
+    color: #111827 !important;
+  }
+
+  html[data-admin-theme="dark"] body,
+  html[data-admin-theme="dark"] .page-wrapper {
+    background: #111827;
+    color: #d1d5db;
+  }
+  html[data-admin-theme="dark"] .header-outer,
+  html[data-admin-theme="dark"] .header,
+  html[data-admin-theme="dark"] .sidebar,
+  html[data-admin-theme="dark"] .sidebar .header-left,
+  html[data-admin-theme="dark"] .card,
+  html[data-admin-theme="dark"] .modal-content,
+  html[data-admin-theme="dark"] .dropdown-menu,
+  html[data-admin-theme="dark"] .fullscreen {
+    background: #1f2937;
+    border-color: #374151;
+    color: #e5e7eb;
+  }
+  html[data-admin-theme="dark"] .page-title,
+  html[data-admin-theme="dark"] .menu-title,
+  html[data-admin-theme="dark"] .sidebar .header-left a span,
+  html[data-admin-theme="dark"] .sidebar-menu li a,
+  html[data-admin-theme="dark"] .user-menu.nav > li > a,
+  html[data-admin-theme="dark"] .app-icon-button,
+  html[data-admin-theme="dark"] .sidebar-close,
+  html[data-admin-theme="dark"] .modal-title,
+  html[data-admin-theme="dark"] .close,
+  html[data-admin-theme="dark"] .dropdown-item,
+  html[data-admin-theme="dark"] .employee-link {
+    color: #e5e7eb;
+  }
+  html[data-admin-theme="dark"] .sidebar-menu li a:hover,
+  html[data-admin-theme="dark"] .dropdown-item:hover,
+  html[data-admin-theme="dark"] .employee-link:hover {
+    background: #374151;
+    color: #6ee7b7;
+  }
+  html[data-admin-theme="dark"] .user-menu.nav > li > a.user-link {
+    background: #374151;
+    border: 1px solid #4b5563;
+    color: #f9fafb;
+  }
+  html[data-admin-theme="dark"] .user-menu.nav > li > a.user-link:hover,
+  html[data-admin-theme="dark"] .user-menu.nav > li > a.user-link:focus {
+    background: #4b5563;
+    border-color: #6b7280;
+    color: #ffffff;
+  }
+  html[data-admin-theme="dark"] .user-menu.nav > li > a.user-link i,
+  html[data-admin-theme="dark"] .user-menu.nav > li > a.user-link span {
+    color: inherit;
+  }
+  html[data-admin-theme="dark"] .user-menu .user-img .status {
+    border-color: #1f2937;
+  }
+  html[data-admin-theme="dark"] .alert-warning {
+    background: #3f3215;
+    border-color: #7c5e10;
+    color: #fde68a;
+  }
+  html[data-admin-theme="dark"] .alert-success {
+    background: #163c2b;
+    border-color: #277451;
+    color: #a7f3d0;
+  }
+  html[data-admin-theme="dark"] .table,
+  html[data-admin-theme="dark"] table.dataTable,
+  html[data-admin-theme="dark"] table.dataTable tbody tr,
+  html[data-admin-theme="dark"] table.dataTable tbody th,
+  html[data-admin-theme="dark"] table.dataTable tbody td,
+  html[data-admin-theme="dark"] #newTable th,
+  html[data-admin-theme="dark"] #newTable td,
+  html[data-admin-theme="dark"] #example th,
+  html[data-admin-theme="dark"] #example td {
+    background: #1f2937;
+    border-color: #4b5563 !important;
+    color: #e5e7eb;
+  }
+  html[data-admin-theme="dark"] .form-control,
+  html[data-admin-theme="dark"] .dataTables_wrapper input,
+  html[data-admin-theme="dark"] .dataTables_wrapper select {
+    background: #111827;
+    border-color: #4b5563;
+    color: #f9fafb;
+  }
+  html[data-admin-theme="dark"] .dataTables_wrapper,
+  html[data-admin-theme="dark"] .dataTables_wrapper .dataTables_info,
+  html[data-admin-theme="dark"] .dataTables_wrapper .dataTables_length,
+  html[data-admin-theme="dark"] .dataTables_wrapper .dataTables_filter,
+  html[data-admin-theme="dark"] .dataTables_wrapper .dataTables_paginate,
+  html[data-admin-theme="dark"] .dataTables_wrapper .dataTables_paginate .paginate_button {
+    color: #d1d5db !important;
+  }
+  html[data-admin-theme="dark"] button.dt-button,
+  html[data-admin-theme="dark"] div.dt-button,
+  html[data-admin-theme="dark"] a.dt-button,
+  html[data-admin-theme="dark"] input.dt-button {
+    background: #374151 !important;
+    border-color: #6b7280 !important;
+    box-shadow: none !important;
+    color: #f9fafb !important;
+  }
+  html[data-admin-theme="dark"] button.dt-button:hover,
+  html[data-admin-theme="dark"] button.dt-button:focus,
+  html[data-admin-theme="dark"] button.dt-button:active,
+  html[data-admin-theme="dark"] a.dt-button:hover,
+  html[data-admin-theme="dark"] a.dt-button:focus,
+  html[data-admin-theme="dark"] a.dt-button:active {
+    background: #4b5563 !important;
+    border-color: #9ca3af !important;
+    color: #ffffff !important;
+  }
+
+  @media (max-width: 991.98px) {
+    .mobile_btn.app-icon-button,
+    .sidebar-close {
+      display: inline-flex;
+    }
+  }
+
+  @media (max-width: 575.98px) {
+    .theme-toggle {
+      margin-right: 52px;
+    }
   }
 </style>

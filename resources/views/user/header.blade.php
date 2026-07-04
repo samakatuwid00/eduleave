@@ -1,12 +1,19 @@
 <div class="header-outer">
-    <div class="header">  
-        <a id="mobile_btn" class="mobile_btn float-left" href="#sidebar"><i class="fas fa-bars" aria-hidden="true"></i></a>
-        <a id="toggle_btn" class="float-left" href="javascript:void(0);">
+    <div class="header">
+        <button id="mobile_btn" class="mobile_btn app-icon-button float-left" type="button" aria-controls="sidebar" aria-expanded="false" aria-label="Open navigation">
+            <i class="fas fa-bars" aria-hidden="true"></i>
+        </button>
+        <button id="toggle_btn" class="app-icon-button float-left" type="button" aria-controls="sidebar" aria-expanded="true" aria-label="Collapse navigation">
+            <i class="fas fa-angle-left" aria-hidden="true"></i>
+        </button>
         <ul class="nav float-left">
             <li>
                 <a href="dashboard" class="mobile-logo d-md-block d-lg-none d-block"><img src="{{ asset('assets/images/icons8-leave-48.png') }}" alt="" width="30" height="30"></a>
             </li>
         </ul>   
+        <button id="theme_toggle" class="app-icon-button theme-toggle float-right" type="button" aria-pressed="false" aria-label="Enable dark mode" title="Toggle dark mode">
+            <i class="fas fa-moon" aria-hidden="true"></i>
+        </button>
         <!-- User Menu -->
         <ul class="nav user-menu float-right">
             <li class="nav-item dropdown has-arrow">
