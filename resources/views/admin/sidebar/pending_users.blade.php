@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   
-  @include('admin.css')
+  @include('admin.head')
 
 </head>
 <body>

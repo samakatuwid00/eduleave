@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 
-  @include('user.css')
+  @include('user.head')
   
 </head>
 <body data-card-type="{{ $profile->personnelType->code }}">
