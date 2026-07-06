@@ -42,7 +42,7 @@
 <script src="{{ asset('/admincss/assets/js/chart-data.js') }}"></script>
 <script src="{{ asset('/admincss/assets/js/app.js') }}"></script>
 <script src="{{ asset('/admincss/assets/js/admin-shell.js') }}"></script>
-<script src="{{ asset('/admincss/assets/js/custom.js') }}"></script>
+<script src="{{ asset('/admincss/assets/js/custom.js') }}?v={{ filemtime(public_path('admincss/assets/js/custom.js')) }}"></script>
 
 <!-- datatables -->
 <script src="https://cdn.datatables.net/1.13.1/js/jquery.dataTables.min.js"></script>

@@ -225,6 +225,8 @@ $(document).ready(function () {
     // Handle More Info Button
     $(document).on('click', '.more-info-btn', function() {
         const userId = $(this).data("id"); // Get the user ID from data-id attribute
+        const modalSelector = $(this).data("details-modal") || "#moreInfoModal";
+        const $detailsModal = $(modalSelector);
 
         // AJAX request to fetch user details
         $.ajax({
@@ -232,28 +234,33 @@ $(document).ready(function () {
             method: "GET",
             data: { id: userId }, // Send user ID to the server
             success: function (response) {
-                const displayValue = (value) => value || "N/A";
+                const displayValue = (value) => {
+                    return value === null || value === undefined || String(value).trim() === ""
+                        ? "N/A"
+                        : value;
+                };
 
                 // Populate modal fields with the user details
-                $("#modalName").text(response.name);
-                $("#modalEmail").text(response.email);
-                $("#modalPersonnelType").text(displayValue(response.personnel_type));
-                $("#modalPosition").text(displayValue(response.position));
-                $("#modalDateEmployed").text(displayValue(response.date_employed));
-                $("#modalSex").text(displayValue(response.sex));
-                $("#modalDateOfBirth").text(displayValue(response.date_of_birth));
-                $("#modalPlaceOfBirth").text(displayValue(response.place_of_birth));
-                $("#modalEmployeeNumber").text(displayValue(response.employee_number));
-                $("#modalStation").text(displayValue(response.station));
-                $("#modalCivilStatus").text(displayValue(response.civil_status));
-                $("#modalStatus").text(
-                    response.status.charAt(0).toUpperCase() +
-                        response.status.slice(1)
+                $detailsModal.find("#modalName").text(displayValue(response.name));
+                $detailsModal.find("#modalEmail").text(displayValue(response.email));
+                $detailsModal.find("#modalPersonnelType").text(displayValue(response.personnel_type));
+                $detailsModal.find("#modalPosition").text(displayValue(response.position));
+                $detailsModal.find("#modalDateEmployed").text(displayValue(response.date_employed));
+                $detailsModal.find("#modalSex").text(displayValue(response.sex));
+                $detailsModal.find("#modalDateOfBirth").text(displayValue(response.date_of_birth));
+                $detailsModal.find("#modalPlaceOfBirth").text(displayValue(response.place_of_birth));
+                $detailsModal.find("#modalEmployeeNumber").text(displayValue(response.employee_number));
+                $detailsModal.find("#modalStation").text(displayValue(response.station));
+                $detailsModal.find("#modalCivilStatus").text(displayValue(response.civil_status));
+                $detailsModal.find("#modalStatus").text(
+                    response.status
+                        ? response.status.charAt(0).toUpperCase() + response.status.slice(1)
+                        : "N/A"
                 ); // Capitalize first letter
 
                 // Apply color styles based on status
                 if (response.status === "pending") {
-                    $("#modalStatus").css({
+                    $detailsModal.find("#modalStatus").css({
                         color: "orange",
                         "font-weight": "bold",
                     });
@@ -261,7 +268,7 @@ $(document).ready(function () {
                     $("#modalRejectBtn").show();
                     $("#modalCloseButton").hide();
                 } else if (response.status === "rejected") {
-                    $("#modalStatus").css({
+                    $detailsModal.find("#modalStatus").css({
                         color: "red",
                         "font-weight": "bold",
                     });
@@ -269,7 +276,7 @@ $(document).ready(function () {
                     $("#modalRejectBtn").hide();
                     $("#modalCloseButton").show();
                 } else if (response.status === "active") {
-                    $("#modalStatus").css({
+                    $detailsModal.find("#modalStatus").css({
                         color: "green",
                         "font-weight": "bold",
                     });
@@ -282,7 +289,7 @@ $(document).ready(function () {
                 $("#modalRejectBtn").data("id", userId);
 
                 // Show the modal
-                $("#moreInfoModal").modal("show");
+                $detailsModal.modal("show");
             },
             error: function () {
                 Swal.fire(
@@ -375,7 +382,11 @@ $(document).ready(function () {
         // Attach click event for View Leave Card button
         $(document).on("click", "#viewLeaveCardBtn", function () {
             // Get the employee number from the modal's Employee Number span
-            const employeeNumber = $("#modalEmployeeNumber").text().trim();
+            const employeeNumber = $(this)
+                .closest(".modal")
+                .find("#modalEmployeeNumber")
+                .text()
+                .trim();
 
             if (employeeNumber && employeeNumber !== "N/A") {
                 // Redirect to the leave card page with the employee number

@@ -70,7 +70,7 @@ class AdminController extends Controller
                 'employee_number' => $profile?->employee_number,
                 'station' => $profile?->station,
                 'civil_status' => $profile?->civil_status,
-                'personnel_type' => $profile?->personnelType?->name,
+                'personnel_type' => $profile?->personnelType?->name ?? 'N/A',
                 'status' => $user->status,
             ]);
         }

@@ -50,7 +50,7 @@
                   <td>{{ $row->employeeProfile?->employee_number ?? 'N/A' }}</td>
                   <td class="action-buttons">
                     <!-- View Button -->
-                    <button class="btn btn-info more-info-btn" data-id="{{ $row->id }}" title="View">
+                    <button class="btn btn-info more-info-btn" data-id="{{ $row->id }}" data-details-modal="#leaveCardInfoModal" title="View">
                       <i class="fa fa-eye"></i>
                     </button>
                     <!-- Edit Button -->

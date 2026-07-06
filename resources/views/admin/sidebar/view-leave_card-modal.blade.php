@@ -1,10 +1,10 @@
 <!-- View Leave Card Modal -->
-<div id="moreInfoModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="moreInfoModalLabel" aria-hidden="true">
+<div id="leaveCardInfoModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="leaveCardInfoModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-scrollable" role="document">
     <div class="modal-content">
       <!-- Modal Header -->
       <div class="modal-header">
-        <h3 class="modal-title" id="moreInfoModalLabel"><strong>User Information</strong></h3>
+        <h3 class="modal-title" id="leaveCardInfoModalLabel"><strong>User Information</strong></h3>
         <button
           type="button"
           class="close"

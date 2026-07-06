@@ -54,7 +54,9 @@ test('admin user tables display employee numbers from employee profiles', functi
 
     $this->get('/admin/teacher_leave_cards')
         ->assertOk()
-        ->assertSee('EMP-ACTIVE');
+        ->assertSee('EMP-ACTIVE')
+        ->assertSee('id="leaveCardInfoModal"', false)
+        ->assertSee('data-details-modal="#leaveCardInfoModal"', false);
 });
 
 test('admin details modal receives normalized employee profile fields', function () {
@@ -89,6 +91,14 @@ test('admin details modal receives normalized employee profile fields', function
             'civil_status' => 'Married',
             'status' => 'active',
         ]);
+});
+
+test('admin details API falls back when an employee profile is missing', function () {
+    $user = User::factory()->create(['status' => 'active']);
+
+    $this->getJson('/get-user-details?id='.$user->getKey())
+        ->assertOk()
+        ->assertJsonPath('personnel_type', 'N/A');
 });
 
 test('approved users are ordered by their latest approval update', function () {
