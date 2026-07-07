@@ -31,8 +31,13 @@ class TeachingLeaveCard extends Model
         'service_credit_balance',
         'days_without_pay',
         'nature_of_leave',
+        'leave_type_id',
         'record_of_leave_dso_number',
         'remarks',
+        'period_start',
+        'period_end',
+        'parse_state',
+        'parse_note',
     ];
 
     protected function casts(): array
@@ -42,11 +47,18 @@ class TeachingLeaveCard extends Model
             'days_with_pay' => 'decimal:2',
             'service_credit_balance' => 'decimal:2',
             'days_without_pay' => 'decimal:2',
+            'period_start' => 'date',
+            'period_end' => 'date',
         ];
     }
 
     public function employeeProfile(): BelongsTo
     {
         return $this->belongsTo(EmployeeProfile::class, 'employee_profile_id', 'user_id');
+    }
+
+    public function leaveType(): BelongsTo
+    {
+        return $this->belongsTo(LeaveType::class);
     }
 }

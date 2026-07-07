@@ -13,6 +13,17 @@ $(document).ready(function () {
           })
         : null;
 
+    const actionCenterTable =
+        $("#actionCenterTable").length && $.fn.DataTable
+        ? $("#actionCenterTable").DataTable({
+              order: [[0, "desc"], [4, "desc"]],
+              pageLength: 10,
+              lengthMenu: [10, 25, 50, 100],
+              scrollX: true,
+              columnDefs: [{ targets: 6, orderable: false }],
+          })
+        : null;
+
     function adjustVisibleDataTables() {
         if (!$.fn.DataTable) {
             return;

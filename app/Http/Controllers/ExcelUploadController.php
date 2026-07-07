@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\EmployeeProfile;
 use App\Models\PersonnelType;
+use App\Services\LeaveCardNormalizer;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -16,6 +17,8 @@ use Symfony\Component\HttpFoundation\HeaderUtils;
 
 class ExcelUploadController extends Controller
 {
+    public function __construct(private readonly LeaveCardNormalizer $normalizer) {}
+
     public function upload(Request $request, string $cardType, string $employeeNumber): RedirectResponse
     {
         $request->validate([
@@ -164,7 +167,7 @@ class ExcelUploadController extends Controller
     {
         $row = array_pad($row, 11, null);
 
-        return [
+        return $this->normalizer->teaching([
             'inclusive_period' => $this->nullableText($row[0]),
             'nature_of_activity' => $this->nullableText($row[1]),
             'days_credited' => $this->nullableNumber($row[2], $rowNumber, 'No. of Days Credited'),
@@ -176,14 +179,14 @@ class ExcelUploadController extends Controller
             'nature_of_leave' => $this->nullableText($row[8]),
             'record_of_leave_dso_number' => $this->nullableText($row[9]),
             'remarks' => $this->nullableText($row[10]),
-        ];
+        ]);
     }
 
     private function nonTeachingRecord(array $row, int $rowNumber): array
     {
         $row = array_pad($row, 11, null);
 
-        return [
+        return $this->normalizer->nonTeaching([
             'period' => $this->nullableText($row[0]),
             'particulars' => $this->nullableText($row[1]),
             'vacation_leave_earned' => $this->nullableNumber($row[2], $rowNumber, 'Vacation Leave Earned'),
@@ -195,7 +198,7 @@ class ExcelUploadController extends Controller
             'sick_leave_balance' => $this->nullableText($row[8]),
             'sick_leave_without_pay' => $this->nullableText($row[9]),
             'leave_application_action' => $this->nullableText($row[10]),
-        ];
+        ]);
     }
 
     private function nullableText(mixed $value): ?string

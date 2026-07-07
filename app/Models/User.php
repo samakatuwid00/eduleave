@@ -6,6 +6,7 @@ use App\Notifications\QueuedResetPassword;
 use App\Notifications\QueuedVerifyEmail;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -46,12 +47,18 @@ class User extends Authenticatable implements MustVerifyEmail
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'processed_at' => 'datetime',
         ];
     }
 
     public function employeeProfile(): HasOne
     {
         return $this->hasOne(EmployeeProfile::class, 'user_id');
+    }
+
+    public function processedBy(): BelongsTo
+    {
+        return $this->belongsTo(self::class, 'processed_by');
     }
 
     public function sendEmailVerificationNotification(): void

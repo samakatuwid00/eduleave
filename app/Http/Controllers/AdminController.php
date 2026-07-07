@@ -8,12 +8,15 @@ use App\Models\CardInfo;
 use App\Models\EmployeeProfile;
 use App\Models\PersonnelType;
 use App\Models\User;
+use App\Services\LeaveCardNormalizer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 
 class AdminController extends Controller
 {
+    public function __construct(private readonly LeaveCardNormalizer $normalizer) {}
+
     public function all_users()
     {
         $users = User::with('employeeProfile.personnelType')
@@ -78,7 +81,7 @@ class AdminController extends Controller
         return response()->json(['error' => 'User not found'], 404);
     }
 
-    public function approveUser($id)
+    public function approveUser(Request $request, $id)
     {
         $user = User::find($id);
 
@@ -86,11 +89,18 @@ class AdminController extends Controller
             return response()->json(['message' => 'User not found!'], 404);
         }
 
-        $notificationQueued = DB::transaction(function () use ($user) {
+        $reason = $request->validate(['decision_reason' => 'nullable|string|max:500'])['decision_reason'] ?? null;
+
+        $notificationQueued = DB::transaction(function () use ($user, $reason) {
             $updated = User::query()
                 ->whereKey($user->getKey())
                 ->where('status', 'pending')
-                ->update(['status' => 'active']);
+                ->update([
+                    'status' => 'active',
+                    'processed_by' => auth()->id(),
+                    'processed_at' => now(),
+                    'decision_reason' => $reason,
+                ]);
 
             if (! $updated) {
                 return false;
@@ -113,7 +123,7 @@ class AdminController extends Controller
         ]);
     }
 
-    public function rejectUser($id)
+    public function rejectUser(Request $request, $id)
     {
         $user = User::find($id);
 
@@ -121,11 +131,18 @@ class AdminController extends Controller
             return response()->json(['message' => 'User not found!'], 404);
         }
 
-        $notificationQueued = DB::transaction(function () use ($user) {
+        $reason = $request->validate(['decision_reason' => 'nullable|string|max:500'])['decision_reason'] ?? null;
+
+        $notificationQueued = DB::transaction(function () use ($user, $reason) {
             $updated = User::query()
                 ->whereKey($user->getKey())
                 ->where('status', 'pending')
-                ->update(['status' => 'rejected']);
+                ->update([
+                    'status' => 'rejected',
+                    'processed_by' => auth()->id(),
+                    'processed_at' => now(),
+                    'decision_reason' => $reason,
+                ]);
 
             if (! $updated) {
                 return false;
@@ -175,7 +192,13 @@ class AdminController extends Controller
     {
         $modelClass = PersonnelType::leaveCardModelClass($cardType);
         $leaveCard = $modelClass::query()->findOrFail($id);
-        $leaveCard->update($this->validatedLeaveCardAttributes($request, $cardType));
+        $changes = $this->validatedLeaveCardAttributes($request, $cardType);
+        $source = array_merge($leaveCard->getAttributes(), $changes);
+        $attributes = match ($cardType) {
+            PersonnelType::CODE_TEACHING => $this->normalizer->teaching($source),
+            PersonnelType::CODE_NON_TEACHING => $this->normalizer->nonTeaching($source),
+        };
+        $leaveCard->update($attributes);
 
         return response()->json(['success' => true, 'message' => 'Row updated successfully.']);
     }

@@ -24,6 +24,7 @@ class NonTeachingLeaveCard extends Model
         'employee_profile_id',
         'period',
         'particulars',
+        'leave_type_id',
         'vacation_leave_earned',
         'vacation_leave_with_pay',
         'vacation_leave_balance',
@@ -33,6 +34,15 @@ class NonTeachingLeaveCard extends Model
         'sick_leave_balance',
         'sick_leave_without_pay',
         'leave_application_action',
+        'period_start',
+        'period_end',
+        'vacation_leave_with_pay_value',
+        'vacation_leave_balance_value',
+        'sick_leave_balance_value',
+        'sick_leave_without_pay_value',
+        'application_action_code',
+        'parse_state',
+        'parse_note',
     ];
 
     protected function casts(): array
@@ -42,11 +52,22 @@ class NonTeachingLeaveCard extends Model
             'vacation_leave_without_pay' => 'decimal:2',
             'sick_leave_earned' => 'decimal:2',
             'sick_leave_with_pay' => 'decimal:2',
+            'vacation_leave_with_pay_value' => 'decimal:2',
+            'vacation_leave_balance_value' => 'decimal:2',
+            'sick_leave_balance_value' => 'decimal:2',
+            'sick_leave_without_pay_value' => 'decimal:2',
+            'period_start' => 'date',
+            'period_end' => 'date',
         ];
     }
 
     public function employeeProfile(): BelongsTo
     {
         return $this->belongsTo(EmployeeProfile::class, 'employee_profile_id', 'user_id');
+    }
+
+    public function leaveType(): BelongsTo
+    {
+        return $this->belongsTo(LeaveType::class);
     }
 }

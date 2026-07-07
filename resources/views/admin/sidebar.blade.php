@@ -14,8 +14,17 @@
                 <li class="menu-title">Menu</li>
                 <li class="{{ Request::is('admin/dashboard') ? 'active' : '' }}">
                     <a href="{{ url('admin/dashboard') }}">
-                        <img src="{{ asset('admincss/assets/img/sidebar/icon-1.png') }}" alt="icon">
+                        <img src="{{ asset('admincss/assets/img/sidebar/icon-27.png') }}" alt="icon">
                         <span>Dashboard</span>
+                    </a>
+                </li>
+                <li class="{{ Request::is('admin/action-center') ? 'active' : '' }}">
+                    <a href="{{ route('admin.action-center') }}">
+                        <img src="{{ asset('admincss/assets/img/sidebar/icon-19.png') }}" alt="icon">
+                        <span>Action Center</span>
+                        @isset($actionCount)
+                            @if ($actionCount > 0)<span class="action-center-badge">{{ $actionCount }}</span>@endif
+                        @endisset
                     </a>
                 </li>
                 <li class="submenu">

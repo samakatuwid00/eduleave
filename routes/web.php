@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ActionCenterController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\ExcelUploadController;
 use App\Http\Controllers\HomeController;
@@ -33,6 +34,10 @@ require __DIR__.'/auth.php';
 Route::get('/admin/dashboard', [HomeController::class, 'index'])
     ->middleware(['auth', 'admin'])
     ->name('admin.dashboard');
+
+Route::get('/admin/action-center', [ActionCenterController::class, 'index'])
+    ->middleware(['auth', 'admin'])
+    ->name('admin.action-center');
 
 // User Dashboard Warning
 Route::get('/user/dashboard/warning', [UserController::class, 'warning'])
