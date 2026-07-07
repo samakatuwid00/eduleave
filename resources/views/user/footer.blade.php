@@ -1,3 +1,40 @@
+<footer class="application-footer">
+  <p>&copy; {{ now()->year }} EduLeave. All rights reserved.</p>
+</footer>
+
+<style>
+  .application-footer {
+    position: static !important;
+    top: auto !important;
+    right: auto !important;
+    bottom: auto !important;
+    left: auto !important;
+    display: block !important;
+    float: none !important;
+    clear: both !important;
+    width: auto !important;
+    margin: 24px 10px 10px 290px !important;
+    padding: 16px 20px !important;
+    box-sizing: border-box;
+    text-align: center;
+  }
+
+  .application-footer p {
+    margin: 0 !important;
+  }
+
+  .mini-sidebar .application-footer {
+    margin-left: 110px !important;
+  }
+
+  @media (max-width: 991.98px) {
+    .application-footer,
+    .mini-sidebar .application-footer {
+      margin-left: 10px !important;
+    }
+  }
+</style>
+
 <!-- Scripts -->
 <script src="{{ asset('usercss/assets/js/jquery-3.6.0.min.js') }}"></script>
 <script src="{{ asset('usercss/assets/js/bootstrap.bundle.min.js') }}"></script>

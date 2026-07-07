@@ -3,28 +3,35 @@
 </footer>
 
 <style>
-    /* The admin theme likely gives .application-footer a fixed/absolute
-       position with a hardcoded offset, which is why it floats over the
-       table instead of sitting below it. Forcing normal flow guarantees
-       it always renders after the content, regardless of what the theme's
-       own CSS does. */
     .application-footer {
-        position: flex !important;
+        position: static !important;
         top: auto !important;
         left: auto !important;
         right: auto !important;
         bottom: auto !important;
         display: block !important;
+        float: none !important;
         clear: both !important;
-        width: 100% !important;
-        margin: 24px 0 0 !important;
+        width: auto !important;
+        margin: 24px 10px 10px 290px !important;
         padding: 16px 20px !important;
-        z-index: 1 !important;
+        box-sizing: border-box;
         text-align: center;
     }
 
     .application-footer p {
         margin: 0 !important;
+    }
+
+    .mini-sidebar .application-footer {
+        margin-left: 110px !important;
+    }
+
+    @media (max-width: 991.98px) {
+        .application-footer,
+        .mini-sidebar .application-footer {
+            margin-left: 10px !important;
+        }
     }
 </style>
 
