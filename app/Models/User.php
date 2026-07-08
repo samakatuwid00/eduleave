@@ -15,6 +15,22 @@ class User extends Authenticatable implements MustVerifyEmail
 {
     use HasFactory, Notifiable;
 
+    public const ROLE_SUPER_ADMIN = 'super_admin';
+
+    public const ROLE_RECORDS_ADMIN = 'records_admin';
+
+    public const ROLE_AUDITOR = 'auditor';
+
+    public const ADMIN_PERMISSIONS = [
+        'manage_users',
+        'manage_leave_cards',
+        'manage_imports',
+        'view_analytics',
+        'export_reports',
+        'manage_automation',
+        'view_audit',
+    ];
+
     /**
      * The attributes that are mass assignable.
      *
@@ -87,9 +103,39 @@ class User extends Authenticatable implements MustVerifyEmail
             : 'user/dashboard';
     }
 
-    public function isAdmin()
+    public function isAdmin(): bool
     {
-        return $this->admin;  // Assumes 'is_admin' field exists
+        return $this->usertype === 'admin';
+    }
+
+    public function effectiveAdminRole(): ?string
+    {
+        if (! $this->isAdmin()) {
+            return null;
+        }
+
+        return $this->admin_role ?: self::ROLE_SUPER_ADMIN;
+    }
+
+    public function isSuperAdmin(): bool
+    {
+        return $this->effectiveAdminRole() === self::ROLE_SUPER_ADMIN;
+    }
+
+    public function hasAdminPermission(string $permission): bool
+    {
+        if (! $this->isAdmin() || ! in_array($permission, self::ADMIN_PERMISSIONS, true)) {
+            return false;
+        }
+
+        return match ($this->effectiveAdminRole()) {
+            self::ROLE_SUPER_ADMIN => true,
+            self::ROLE_RECORDS_ADMIN => in_array($permission, [
+                'manage_users', 'manage_leave_cards', 'manage_imports', 'view_analytics', 'export_reports',
+            ], true),
+            self::ROLE_AUDITOR => in_array($permission, ['view_analytics', 'export_reports', 'view_audit'], true),
+            default => false,
+        };
     }
 
     public function Pending()

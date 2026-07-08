@@ -56,17 +56,9 @@
                   style="margin-left: 4px">
                   <i class="fa fa-download"></i>
                 </a>
-                <!-- Upload Excel File -->
-                <form class="upload-form"
-                  action="{{ route('admin.leave-card.import', ['cardType' => $profile->personnelType->code, 'employeeNumber' => $profile->employee_number]) }}"
-                  method="POST"
-                  enctype="multipart/form-data">
-                  @csrf
-                  <input id="fileInput" class="form-control-sm" type="file" name="excel_file" accept=".xlsx" required style="display: none;" onchange="updateButton()">
-                  <button type="button" id="uploadButton" class="btn btn-danger" onclick="triggerFileInput()" title="Upload Excel File" style="margin-left: 4px">
-                    <i class="fa fa-upload"></i>
-                  </button>
-                </form>
+                <a href="{{ route('admin.import-center', ['employee' => $profile->employee_number]) }}" class="btn btn-primary" title="Open Import Center" style="margin-left: 4px">
+                  <i class="fa fa-upload"></i>
+                </a>
                 <!-- Add Button -->
                 <a
                   class="btn btn-success add-new-entry"

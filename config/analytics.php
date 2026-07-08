@@ -7,4 +7,6 @@ return [
         'pending_critical_days' => (int) env('ACTION_CENTER_PENDING_CRITICAL_DAYS', 7),
         'missing_card_grace_days' => (int) env('ACTION_CENTER_MISSING_CARD_GRACE_DAYS', 7),
     ],
+    'import_preview_minutes' => (int) env('IMPORT_PREVIEW_MINUTES', 30),
+    'import_max_rows' => (int) env('IMPORT_MAX_ROWS', 5000),
 ];

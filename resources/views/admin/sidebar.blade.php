@@ -18,6 +18,7 @@
                         <span>Dashboard</span>
                     </a>
                 </li>
+                @if (auth()->user()->hasAdminPermission('view_analytics'))
                 <li class="{{ Request::is('admin/action-center') ? 'active' : '' }}">
                     <a href="{{ route('admin.action-center') }}">
                         <img src="{{ asset('admincss/assets/img/sidebar/icon-19.png') }}" alt="icon">
@@ -27,6 +28,46 @@
                         @endisset
                     </a>
                 </li>
+                <li class="{{ Request::is('admin/leave-analytics') ? 'active' : '' }}">
+                    <a href="{{ route('admin.leave-analytics') }}">
+                        <img src="{{ asset('admincss/assets/img/sidebar/icon-20.png') }}" alt="icon">
+                        <span>Leave Analytics</span>
+                    </a>
+                </li>
+                @endif
+                @if (auth()->user()->hasAdminPermission('manage_imports'))
+                <li class="{{ Request::is('admin/import-center*') ? 'active' : '' }}">
+                    <a href="{{ route('admin.import-center') }}">
+                        <img src="{{ asset('admincss/assets/img/sidebar/icon-7.png') }}" alt="icon">
+                        <span>Import Center</span>
+                    </a>
+                </li>
+                @endif
+                @if (auth()->user()->hasAdminPermission('manage_automation'))
+                <li class="{{ Request::is('admin/automation*') ? 'active' : '' }}">
+                    <a href="{{ route('admin.automation') }}">
+                        <img src="{{ asset('admincss/assets/img/sidebar/icon-14.png') }}" alt="icon">
+                        <span>Automation</span>
+                    </a>
+                </li>
+                @endif
+                @if (auth()->user()->hasAdminPermission('export_reports'))
+                <li class="{{ Request::is('admin/reports*') ? 'active' : '' }}">
+                    <a href="{{ route('admin.reports') }}">
+                        <img src="{{ asset('admincss/assets/img/sidebar/icon-22.png') }}" alt="icon">
+                        <span>Reports</span>
+                    </a>
+                </li>
+                @endif
+                @if (auth()->user()->hasAdminPermission('view_audit'))
+                <li class="{{ Request::is('admin/audit*') ? 'active' : '' }}">
+                    <a href="{{ route('admin.audit') }}">
+                        <img src="{{ asset('admincss/assets/img/sidebar/icon-23.png') }}" alt="icon">
+                        <span>Audit Log</span>
+                    </a>
+                </li>
+                @endif
+                @if (auth()->user()->hasAdminPermission('manage_users'))
                 <li class="submenu">
                     <a href="#">
                         <img src="{{ asset('admincss/assets/img/sidebar/icon-2.png') }}" alt="icon">
@@ -47,12 +88,15 @@
                     </li>
                     </ul>
                 </li>
+                @endif
+                @if (auth()->user()->hasAdminPermission('manage_leave_cards'))
                 <li class="{{ Request::is('admin/teacher_leave_cards') || Request::is('admin/leave_card/*') ? 'active' : '' }}">
                     <a href="{{ url('/admin/teacher_leave_cards') }}">
                         <img src="{{ asset('admincss/assets/img/sidebar/icon-6.png') }}" alt="icon">
                         <span>Leave Cards</span>
                     </a>
                 </li>
+                @endif
             </ul>
         </div>
     </div>

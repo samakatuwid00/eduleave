@@ -36,11 +36,11 @@ test('rejection changes a pending user and queues only one email', function () {
     $user = User::factory()->create(['status' => 'pending']);
 
     $this->actingAs($admin)
-        ->post(route('admin.users.reject', $user))
+        ->post(route('admin.users.reject', $user), ['decision_reason' => 'Registration details were not accepted.'])
         ->assertOk()
         ->assertJsonPath('notification_queued', true);
 
-    $this->post(route('admin.users.reject', $user))
+    $this->post(route('admin.users.reject', $user), ['decision_reason' => 'Registration details were not accepted.'])
         ->assertOk()
         ->assertJsonPath('notification_queued', false);
 

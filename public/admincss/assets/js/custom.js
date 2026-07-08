@@ -24,6 +24,49 @@ $(document).ready(function () {
           })
         : null;
 
+    const leaveAnalyticsTable =
+        $("#leaveAnalyticsTable").length && $.fn.DataTable
+        ? $("#leaveAnalyticsTable").DataTable({
+              order: [[3, "desc"]],
+              pageLength: 10,
+              lengthMenu: [10, 25, 50, 100],
+              scrollX: true,
+              columnDefs: [{ targets: 9, orderable: false }],
+          })
+        : null;
+
+    const importHistoryTable =
+        $("#importHistoryTable").length && $.fn.DataTable
+        ? $("#importHistoryTable").DataTable({
+              order: [[0, "desc"]],
+              pageLength: 10,
+              lengthMenu: [10, 25, 50, 100],
+              scrollX: true,
+              columnDefs: [{ targets: 7, orderable: false }],
+          })
+        : null;
+
+    const automationRunsTable =
+        $("#automationRunsTable").length && $.fn.DataTable
+        ? $("#automationRunsTable").DataTable({
+              order: [[0, "desc"]],
+              pageLength: 10,
+              lengthMenu: [10, 25, 50, 100],
+              scrollX: true,
+              columnDefs: [{ targets: 7, orderable: false }],
+          })
+        : null;
+
+    const reportsPreviewTable =
+        $("#reportsPreviewTable").length && $.fn.DataTable
+        ? $("#reportsPreviewTable").DataTable({
+              order: [],
+              pageLength: 10,
+              lengthMenu: [10, 25, 50, 100],
+              scrollX: true,
+          })
+        : null;
+
     function adjustVisibleDataTables() {
         if (!$.fn.DataTable) {
             return;
@@ -352,6 +395,16 @@ $(document).ready(function () {
             title: "Are you sure?",
             text: "You want to " + action + " this user!",
             icon: "warning",
+            input: "textarea",
+            inputLabel: approving ? "Decision note (optional)" : "Rejection reason",
+            inputPlaceholder: approving
+                ? "Optional approval note"
+                : "Explain why this registration is being rejected",
+            inputValidator: function (value) {
+                if (!approving && !String(value || "").trim()) {
+                    return "A rejection reason is required.";
+                }
+            },
             showCancelButton: true,
             confirmButtonColor: "#3085d6",
             cancelButtonColor: "#d33",
@@ -364,6 +417,7 @@ $(document).ready(function () {
             $.ajax({
                 url: "/admin/users/" + action + "/" + userId,
                 method: "POST",
+                data: { decision_reason: String(result.value || "").trim() },
                 success: function (response) {
                     $("#moreInfoModal").modal("hide");
                     refreshUserTableRow(userId, response.status || status);
@@ -483,7 +537,23 @@ $(document).ready(function () {
                 updatedData[field] = value;
             });
 
-            $.ajax({
+            Swal.fire({
+                title: "Reason for change",
+                input: "textarea",
+                inputPlaceholder: "Explain this leave-card correction",
+                showCancelButton: true,
+                inputValidator: function (value) {
+                    if (!String(value || "").trim()) {
+                        return "A reason is required.";
+                    }
+                },
+            }).then(function (result) {
+                if (!result.isConfirmed) {
+                    return;
+                }
+                updatedData.change_reason = String(result.value).trim();
+
+                $.ajax({
                 url: `/admin/card_info/${encodeURIComponent(cardType)}/${row.data("id")}`,
                 type: "PUT",
                 data: updatedData,
@@ -524,6 +594,7 @@ $(document).ready(function () {
                     );
                 },
             });
+            });
         });
 
         // Cancel button functionality
@@ -558,15 +629,26 @@ $(document).ready(function () {
                 return;
             }
 
-            alertify
-                .confirm(
-                    "Confirm Deletion",
-                    "Are you sure you want to delete row number: " +
-                        (globalRowIndex + 1), // Show global row number (1-based)
-                    function () {
+            Swal.fire({
+                title: "Delete row " + (globalRowIndex + 1) + "?",
+                text: "This action requires a reason and will be recorded.",
+                icon: "warning",
+                input: "textarea",
+                inputPlaceholder: "Explain why this row must be deleted",
+                showCancelButton: true,
+                confirmButtonText: "Delete row",
+                confirmButtonColor: "#d33",
+                inputValidator: function (value) {
+                    if (!String(value || "").trim()) {
+                        return "A deletion reason is required.";
+                    }
+                },
+            }).then(function (result) {
+                if (result.isConfirmed) {
                         $.ajax({
                             url: `/admin/card_info/${encodeURIComponent(cardType)}/${row.data("id")}`,
                             type: "DELETE",
+                            data: { audit_reason: String(result.value).trim() },
                             headers: {
                                 "X-CSRF-TOKEN": $(
                                     'meta[name="csrf-token"]'
@@ -592,12 +674,8 @@ $(document).ready(function () {
                                 );
                             },
                         });
-                    },
-                    function () {
-                        alertify.error("Deletion canceled.");
-                    }
-                )
-                .set("labels", { ok: "Yes", cancel: "No" });
+                }
+            });
         });
     });
 

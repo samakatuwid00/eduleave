@@ -18,6 +18,7 @@ class ActionCenterController extends Controller
                 'missing_card',
                 'low_balance',
                 'data_quality',
+                'automation_failure',
             ])],
             'severity' => ['nullable', Rule::in(['medium', 'high', 'critical'])],
             'personnel_type' => ['nullable', Rule::in([

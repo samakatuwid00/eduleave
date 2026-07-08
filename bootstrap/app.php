@@ -1,5 +1,9 @@
 <?php
 
+use App\Http\Middleware\Admin;
+use App\Http\Middleware\AdminPermission;
+use App\Http\Middleware\notAdmin;
+use App\Http\Middleware\Pending;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -12,9 +16,10 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->alias([
-            'admin' => \App\Http\Middleware\Admin::class,
-            'not_admin' => \App\Http\Middleware\notAdmin::class,
-            'pending' => \App\Http\Middleware\Pending::class,
+            'admin' => Admin::class,
+            'admin.permission' => AdminPermission::class,
+            'not_admin' => notAdmin::class,
+            'pending' => Pending::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

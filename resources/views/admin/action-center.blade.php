@@ -36,6 +36,7 @@
                                 <option value="missing_card" @selected($filters['category'] === 'missing_card')>Missing leave cards</option>
                                 <option value="low_balance" @selected($filters['category'] === 'low_balance')>Low balances</option>
                                 <option value="data_quality" @selected($filters['category'] === 'data_quality')>Data quality</option>
+                                <option value="automation_failure" @selected($filters['category'] === 'automation_failure')>Automation failures</option>
                             </select>
                         </div>
                         <div class="col-sm-6 col-lg-2 mb-3">

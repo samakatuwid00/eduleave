@@ -8,6 +8,8 @@ use App\Models\CardInfo;
 use App\Models\EmployeeProfile;
 use App\Models\PersonnelType;
 use App\Models\User;
+use App\Services\AuditService;
+use App\Services\AutomationService;
 use App\Services\LeaveCardNormalizer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -15,7 +17,11 @@ use Illuminate\Support\Facades\Mail;
 
 class AdminController extends Controller
 {
-    public function __construct(private readonly LeaveCardNormalizer $normalizer) {}
+    public function __construct(
+        private readonly LeaveCardNormalizer $normalizer,
+        private readonly AutomationService $automation,
+        private readonly AuditService $audit,
+    ) {}
 
     public function all_users()
     {
@@ -107,6 +113,20 @@ class AdminController extends Controller
             }
 
             $user->refresh();
+            $this->audit->record(
+                'user.approved',
+                'user',
+                $user->getKey(),
+                $user->name,
+                ['status' => 'pending'],
+                [
+                    'status' => $user->status,
+                    'processed_by' => $user->processed_by,
+                    'processed_at' => $user->processed_at?->toDateTimeString(),
+                ],
+                $reason,
+                employeeNumber: $user->employeeProfile?->employee_number,
+            );
             Mail::to($user->email)->queue(new UserApprovedMail($user));
 
             return true;
@@ -131,7 +151,7 @@ class AdminController extends Controller
             return response()->json(['message' => 'User not found!'], 404);
         }
 
-        $reason = $request->validate(['decision_reason' => 'nullable|string|max:500'])['decision_reason'] ?? null;
+        $reason = $request->validate(['decision_reason' => 'required|string|max:500'])['decision_reason'];
 
         $notificationQueued = DB::transaction(function () use ($user, $reason) {
             $updated = User::query()
@@ -149,6 +169,20 @@ class AdminController extends Controller
             }
 
             $user->refresh();
+            $this->audit->record(
+                'user.rejected',
+                'user',
+                $user->getKey(),
+                $user->name,
+                ['status' => 'pending'],
+                [
+                    'status' => $user->status,
+                    'processed_by' => $user->processed_by,
+                    'processed_at' => $user->processed_at?->toDateTimeString(),
+                ],
+                $reason,
+                employeeNumber: $user->employeeProfile?->employee_number,
+            );
             Mail::to($user->email)->queue(new UserRejectedMail($user));
 
             return true;
@@ -190,23 +224,62 @@ class AdminController extends Controller
 
     public function update(Request $request, string $cardType, int $id)
     {
+        $reason = $request->validate(['change_reason' => ['required', 'string', 'max:500']])['change_reason'];
         $modelClass = PersonnelType::leaveCardModelClass($cardType);
         $leaveCard = $modelClass::query()->findOrFail($id);
         $changes = $this->validatedLeaveCardAttributes($request, $cardType);
-        $source = array_merge($leaveCard->getAttributes(), $changes);
-        $attributes = match ($cardType) {
-            PersonnelType::CODE_TEACHING => $this->normalizer->teaching($source),
-            PersonnelType::CODE_NON_TEACHING => $this->normalizer->nonTeaching($source),
-        };
-        $leaveCard->update($attributes);
+        DB::transaction(function () use ($leaveCard, $changes, $cardType, $reason) {
+            $before = $leaveCard->getAttributes();
+            $source = array_merge($before, $changes);
+            $attributes = match ($cardType) {
+                PersonnelType::CODE_TEACHING => $this->normalizer->teaching($source),
+                PersonnelType::CODE_NON_TEACHING => $this->normalizer->nonTeaching($source),
+            };
+            $leaveCard->update($attributes);
+            $diff = $this->audit->changedValues($before, $leaveCard->fresh()->getAttributes());
+            $this->audit->record(
+                'leave_card.updated',
+                class_basename($leaveCard),
+                $leaveCard->getKey(),
+                'Leave-card row '.$leaveCard->getKey(),
+                $diff['before'],
+                $diff['after'],
+                $reason,
+                employeeNumber: $leaveCard->employeeProfile?->employee_number,
+            );
+        });
+        $this->automation->notifyEmployeeChange(
+            $leaveCard->employeeProfile()->with('user')->firstOrFail(),
+            'An administrator updated a row on your leave card.',
+        );
 
         return response()->json(['success' => true, 'message' => 'Row updated successfully.']);
     }
 
-    public function destroy(string $cardType, int $id)
+    public function destroy(Request $request, string $cardType, int $id)
     {
+        $reason = $request->validate(['audit_reason' => ['required', 'string', 'max:500']])['audit_reason'];
         $modelClass = PersonnelType::leaveCardModelClass($cardType);
-        $modelClass::query()->findOrFail($id)->delete();
+        $leaveCard = $modelClass::query()->with('employeeProfile.user')->findOrFail($id);
+        $profile = $leaveCard->employeeProfile;
+        DB::transaction(function () use ($leaveCard, $profile, $reason) {
+            $snapshot = $leaveCard->getAttributes();
+            $leaveCard->delete();
+            $this->audit->record(
+                'leave_card.deleted',
+                class_basename($leaveCard),
+                $leaveCard->getKey(),
+                'Leave-card row '.$leaveCard->getKey(),
+                $snapshot,
+                [],
+                $reason,
+                employeeNumber: $profile->employee_number,
+            );
+        });
+        $this->automation->notifyEmployeeChange(
+            $profile,
+            'An administrator removed a row from your leave card.',
+        );
 
         return response()->json(['success' => true, 'message' => 'Row deleted successfully.']);
     }
@@ -227,24 +300,46 @@ class AdminController extends Controller
             'dso_no_rol' => 'nullable|string|max:255',
             'remarks' => 'nullable|string|max:255',
             'employee_number' => 'required|exists:employee_profiles,employee_number',
+            'change_reason' => 'nullable|string|max:500',
         ]);
 
         try {
             // Create a new entry in the card_info table, including the user_id
-            $cardInfo = CardInfo::create([
-                'inclusive_period' => $request->inclusive_period,
-                'nature_of_activity' => $request->nature_of_activity,
-                'no_of_days_credited' => $request->no_of_days_credited,
-                'dso_no_vsr' => $request->dso_no_vsr,
-                'inclusive_dates' => $request->inclusive_dates,
-                'no_days_leave' => $request->no_days_leave,
-                'service_cred_bal' => $request->service_cred_bal,
-                'leave_without_pay' => $request->leave_without_pay,
-                'nature_of_leave' => $request->nature_of_leave,
-                'dso_no_rol' => $request->dso_no_rol,
-                'remarks' => $request->remarks,
-                'emp_num' => $request->employee_number,
-            ]);
+            $profile = EmployeeProfile::query()
+                ->with('user')
+                ->where('employee_number', $request->employee_number)
+                ->firstOrFail();
+            $cardInfo = DB::transaction(function () use ($request, $profile) {
+                $cardInfo = CardInfo::create([
+                    'inclusive_period' => $request->inclusive_period,
+                    'nature_of_activity' => $request->nature_of_activity,
+                    'no_of_days_credited' => $request->no_of_days_credited,
+                    'dso_no_vsr' => $request->dso_no_vsr,
+                    'inclusive_dates' => $request->inclusive_dates,
+                    'no_days_leave' => $request->no_days_leave,
+                    'service_cred_bal' => $request->service_cred_bal,
+                    'leave_without_pay' => $request->leave_without_pay,
+                    'nature_of_leave' => $request->nature_of_leave,
+                    'dso_no_rol' => $request->dso_no_rol,
+                    'remarks' => $request->remarks,
+                    'emp_num' => $request->employee_number,
+                ]);
+                $this->audit->record(
+                    'leave_card.created',
+                    'CardInfo',
+                    $cardInfo->getKey(),
+                    'Leave-card row '.$cardInfo->getKey(),
+                    after: $cardInfo->getAttributes(),
+                    reason: $request->change_reason,
+                    employeeNumber: $profile->employee_number,
+                );
+
+                return $cardInfo;
+            });
+            $this->automation->notifyEmployeeChange(
+                $profile,
+                'An administrator added a row to your leave card.',
+            );
 
             return response()->json([
                 'success' => true,

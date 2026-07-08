@@ -77,7 +77,7 @@ test('a partial teaching edit preserves canonical period values', function () {
     $this->actingAs($admin)->put(route('admin.card-info.update', [
         'cardType' => PersonnelType::CODE_TEACHING,
         'id' => $card->getKey(),
-    ]), ['remarks' => 'Updated'])->assertOk();
+    ]), ['remarks' => 'Updated', 'change_reason' => 'Corrected the recorded remarks.'])->assertOk();
 
     $card->refresh();
 

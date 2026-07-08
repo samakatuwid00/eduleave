@@ -2,13 +2,16 @@
 
 namespace App\Services;
 
+use App\Models\AutomationRun;
 use App\Models\EmployeeProfile;
 use App\Models\NonTeachingLeaveCard;
 use App\Models\PersonnelType;
 use App\Models\TeachingLeaveCard;
 use App\Models\User;
+use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 
 class ActionCenterService
 {
@@ -20,6 +23,7 @@ class ActionCenterService
             ->concat($this->missingCards($filters))
             ->concat($this->lowBalances($filters))
             ->concat($this->dataQuality($filters))
+            ->concat($this->automationFailures())
             ->when($filters['category'], fn (Collection $items, string $category) => $items->where('category', $category))
             ->when($filters['severity'], fn (Collection $items, string $severity) => $items->where('severity', $severity))
             ->when($filters['personnel_type'], fn (Collection $items, string $type) => $items->where('personnel_type', $type))
@@ -222,6 +226,48 @@ class ActionCenterService
         }
 
         return $alerts;
+    }
+
+    private function automationFailures(): Collection
+    {
+        $runs = AutomationRun::query()
+            ->where('status', 'failed')
+            ->latest()
+            ->limit(25)
+            ->get()
+            ->map(fn (AutomationRun $run) => $this->alert(
+                'automation_run_failed',
+                'automation_failure',
+                'high',
+                'Automation run needs attention',
+                str_replace('_', ' ', $run->rule_code),
+                null,
+                $this->ageFrom($run->updated_at),
+                'The run failed. Review its safe error summary and retry after correcting the configuration.',
+                route('admin.automation'),
+                'automation_run',
+                $run->getKey(),
+            ));
+
+        $failedJob = DB::table('failed_jobs')->latest('failed_at')->first();
+
+        if ($failedJob) {
+            $runs->push($this->alert(
+                'queue_job_failed',
+                'automation_failure',
+                'high',
+                'A queued job exhausted its retries',
+                'Mail queue',
+                null,
+                max(0, (int) CarbonImmutable::parse($failedJob->failed_at)->diffInDays(now())),
+                'A queued job failed permanently. Review it from the Automation page.',
+                route('admin.automation'),
+                'failed_job',
+                (int) $failedJob->id,
+            ));
+        }
+
+        return $runs;
     }
 
     private function balanceAlert(EmployeeProfile $profile, float $value, string $label, int $cardId): array

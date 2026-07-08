@@ -38,6 +38,8 @@ class TeachingLeaveCard extends Model
         'period_end',
         'parse_state',
         'parse_note',
+        'import_batch_id',
+        'source_row_number',
     ];
 
     protected function casts(): array
