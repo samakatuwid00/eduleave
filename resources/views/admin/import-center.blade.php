@@ -39,7 +39,7 @@
                 <div class="card-body">
                     <form method="POST" action="{{ route('admin.import-center.preview') }}" enctype="multipart/form-data">
                         @csrf
-                        <div class="row align-items-end">
+                        <div class="row import-upload-row">
                             <div class="col-lg-5 mb-3">
                                 <label for="import_employee">Employee</label>
                                 <select class="form-control" id="import_employee" name="employee_number" required>
@@ -55,18 +55,20 @@
                                     @endforeach
                                 </select>
                             </div>
-                            <div class="col-lg-4 mb-3">
+                            <div class="col-lg-4 mb-3 import-file-group">
                                 <label for="import_file">Excel workbook</label>
                                 <input class="form-control" id="import_file" name="excel_file" type="file" accept=".xlsx" required>
                                 <small class="form-text text-muted">XLSX only, up to 10 MB.</small>
                             </div>
                             <div class="col-lg-3 mb-3 import-upload-actions">
-                                <a class="btn btn-outline-secondary disabled" id="importTemplateLink" href="#" aria-disabled="true">
-                                    <i class="fas fa-download" aria-hidden="true"></i> Template
-                                </a>
-                                <button class="btn btn-primary" type="submit">
-                                    <i class="fas fa-search" aria-hidden="true"></i> Preview
-                                </button>
+                                <div class="import-upload-actions-buttons">
+                                    <a class="btn btn-outline-secondary disabled" id="importTemplateLink" href="#" aria-disabled="true">
+                                        <i class="fas fa-download" aria-hidden="true"></i> Template
+                                    </a>
+                                    <button class="btn btn-primary" type="submit">
+                                        <i class="fas fa-search" aria-hidden="true"></i> Preview
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </form>
